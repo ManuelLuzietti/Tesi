@@ -5,7 +5,7 @@
  */
 
 return [
-    'base_url' => 'http://localhost/', // Base URL including trailing slash (e.g. http://localhost/)
+    'base_url' => 'http://100.100.100.151/', // Base URL including trailing slash (e.g. http://localhost/)
     'default_controller' => 'main', // Default controller to load
     'encoding' => 'utf-8',
     'error_controller' => 'errors', // Controller used for errors (e.g. 404, 500 etc)
@@ -23,9 +23,8 @@ return [
     //screenshot settings
     'screenshots' => [
         'enabled' => 'true',
-        'external_address' => 'localhost', // 'domain_goes_here', localhost for local testing only
-        'port' => '25019',
-	'save_dir' => '/var/www/src/screenshots'
+        'external_address' => '100.100.100.151', // 'domain_goes_here', localhost for local testing only
+        'port' => '25019'
     ],
     //capcha settings
     'capcha' => [

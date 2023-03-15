@@ -6,6 +6,7 @@ services:
     build: .
     ports:
       - "80:80"
+      - "25019:25019"
     volumes:
       - ./public:/var/www/html
       - ./src:/var/www/src

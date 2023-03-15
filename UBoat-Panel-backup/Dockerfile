@@ -15,3 +15,5 @@ RUN apt-get install -y --no-install-recommends libmcrypt4 libmcrypt-dev && \
     docker-php-ext-install mcrypt && \
 #     pecl install mcrypt-1.0.1 && \
     docker-php-ext-enable mcrypt
+RUN apt-get install vim -y
+RUN docker-php-ext-install sockets

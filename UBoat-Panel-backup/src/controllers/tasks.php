@@ -21,12 +21,12 @@ class Tasks extends Controller
     {
         goat::$app->cleanPage();
         if (isset($_POST['bot']) && is_numeric($_POST['bot'])) {
-            $dir = APP_DIR.'/screenshots/';
+            $dir = '/var/www/src/screenshots/';
             $images = glob($dir.'*.bmp');
             $out = [];
             if (! empty($images)) {
                 foreach ($images as $image) {
-                    array_push($out, WEB_BASE.'/private/screenshots/'.basename($image));
+                    array_push($out, 'screenshots/'.basename($image));
                 }
                 echo json_encode($out);
             }
