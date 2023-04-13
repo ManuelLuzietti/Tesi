@@ -22,11 +22,11 @@ class Login extends Controller
         $cap = $this->loadHelper('capcha');
         if (isset($_POST['lg_username']) && isset($_POST['lg_password']) && ! empty(goat::$app->getFlash('_cap')) && isset($_POST['capcha'])) {
             $_cap = goat::$app->getFlash('_cap');
-            if ($_POST['capcha'] !== $_cap) {
-                goat::$app->setFlash('_login_error', ['Error' => 'Invalid capcha, please retry.']);
+            // if ($_POST['capcha'] !== $_cap) {
+            //     goat::$app->setFlash('_login_error', ['Error' => 'Invalid capcha, please retry.']);
 
-                return $this->loadView('login')->render(['cap' => $cap]);
-            }
+            //     return $this->loadView('login')->render(['cap' => $cap]);
+            // }
 
             $user = $this->loadModel('user');
             $rep = $user->actionAuth(['username' => $_POST['lg_username'], 'password' => $_POST['lg_password']]);
