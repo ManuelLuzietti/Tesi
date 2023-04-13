@@ -1,5 +1,7 @@
-UBoat/boat/.vs
-UBoat/boat/Debug
-UBoat/boat/Release
-UBoat/boat/x64
-UBoat/eseguibili
+UBoat/boat/Debug/
+UBoat/boat/Release/
+UBoat/boat/x64/
+UBoat/eseguibili/
+**/.vs/
+**/x64/
+
