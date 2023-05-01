@@ -1061,7 +1061,7 @@ Ogni Asset aggiunto deve passare attraverso i seguenti moduli per poter avere il
 Ossim e l'intera infrastruttura è configurabile e gestibile una volta installato attraverso l'interfaccia web.
 
 
-\subsection*{Requisiti Hardware e deployment}
+\subsection*{Dopley e requisiti Hardware}
 
 Ossim è stato utilizzato come IDS da affiancare a Security Onion. È stato utilizzato principalmente per potrer confrontare i risultati di Security Onion con un secondo IDS e per approfondire un sistema  IDS alternativo.
 
@@ -1072,20 +1072,115 @@ La macchina virtuale sul quale è stato installato OSSIM ha due interfacce di re
     \item  NIC collegata alla Botnet Vlan in modalità promiscua, necessaria per sniffare il traffico di rete.
 \end{itemize} 
 
-
+I requisiti Hardware richiesti  e soddisfati per gestire dai 1000 ai 2000  eventi al secondo sono i seguenti:
 \begin{table}[hbtp]
     \centering
     \begin{tabular}{|l|c|c|c|}
         \hline
         & CPU (cores) & RAM (GB) & DISK (GB) \\
         \hline
-        Minimi     & 4 & 16 & 1000   \\
+        Minimi     & 8 & 16-24 & 500-1000   \\
         \hline
-        Utilizzati &    &   &  \\
+        Utilizzati &  8  & 24 & 500 \\
         \hline
     \end{tabular}
     \caption{Requisiti minimi e risorse effettivamente assegnate ad Ossim}
     \label{tab:requisitiHw4}
 \end{table}
 
-%INSERIRE RISORSE INSTALLATE SU OSSIM IN TABELLA
+\chapter{Studio Botnet 1 - Byob}
+%descrizione OK
+%funzionamento ad alto livello OK
+%funzionamento a basso livello
+%deploy (docker), note debug e modifiche
+%rilevamento con ids
+    
+
+Byob \cite{byob} é una Botnet open source scritta in Python, creata appositamente per scopi educativi e di testing.
+Si compone di quattro categorie di moduli principali:
+\begin{itemize}
+    \item Server Module
+    \item Client Module
+    \item Post-exploitation Modules
+    \item Core Modules
+\end{itemize}
+
+I moduli Core racchiudono le funzionalità principali di Byob e sono utilizzate all'interno del Client Module e del Server Module.  
+
+Il modulo Server viene utilizzato per inizializzare il C\&C Server. Utilizza Flask \cite{flask} come framework e  dispone di un database Sqlite \cite{sqlite} per mantenere i dati e le sessioni dei bot anche a distanza di tempo e in presenza di disconnessioni. Offre controllo sui bot attraverso console collegata via \textit{reverse-shell}\footnote{shell remota a cui viene reindirizzato input e output verso host che vuole accedervi} o attraverso interfaccia web dedicata. Basato su topologia centralizzata con paradigma push-based (il server invia i comandi ai bot).
+
+Il modulo Client è utilizzato per creare i payloads che verranno utilizzato per generare i bot. In particolare il payload è un multi-stage installer che verrà analizzato meglio nel dettaglio.  Il bot così generato sarà in grado di importare moduli necessari e arbitrari direttamente dal server e di caricarli in memoria, non lasciando così traccie su disco. Questo meccanismo permette al bot di non avere dipendenze pregresse se non avere Python installato. Tuttavia per ovviare anche a questa dipendenza è possibile creare eseguibili che includano all'interno, oltre al payload, un interprete Python stand-alone, così che neanche Python risulti più una dipendenza.  Il payload può anche essere opzionalmente criptato e opzionalmente può abortire l'esecuzione se rileva che il sistema sul quale sta eseguendo é una macchina virtuale.
+
+I moduli post-exploitation sono moduli built-in che possono essere importati ed eseguiti su bot e offrono funzionalità operative molto interessanti.
+Tra questi possiamo trovare:
+
+\begin{description}
+    \item [Persistence] Cerca di rendere il malware persistente all'interno del sistema che lo ospita;
+    \item [Packet Sniffer] Cattura traffico di rete;
+    \item [Escalete Privileges] Tenta di ottenere privilegi di amministratore;
+    \item [Port Scanner] Scansiona traffico di rete;
+    \item [Keylogger] Cattura digitazioni della tastiera;
+    \item [Screenshot] Cattura immagine del monitor;
+    \item [Outlook] Utilizza Outlook client per leggere/scrivere email;
+    \item [Process Control] Per elenacare/ricercare/terminare processi;
+    \item [iCloud] Cerca account autenticati ad iCLoud su macOS
+    \item [Miner] Utilizza miner per minare criptovaluta;
+\end{description}
+
+Oltre a questi moduli built-in, il bot può anche importare moduli creati ad-hoc dal botmaster.
+
+
+
+
+\begin{figure}[hbtp]
+    \centering
+    \begin{subfigure}[hbtp]{0.45\textwidth}
+        \centering
+        \includegraphics[width=\textwidth, height=6cm]{res/fig/byob-home.png}
+        \caption{}
+        \label{fig:byobhome}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[hbtp]{0.45\textwidth}
+        \centering
+        \includegraphics[width=\textwidth , height=6cm]{res/fig/byob-shell.png}
+        \caption{}
+        \label{fig:byobshell}
+    \end{subfigure}
+    \caption{(a) Home page; (b) Pagina shell;}
+    \label{ciao1}
+\end{figure}
+
+Nella \Cref{fig:byobhome}  si può vedere la schermata di controllo principale dell'interfaccia web di Byob. In basso è presente una schermata con i bot attualmente collegati. Sul lato sinitro sinistro vi è  un pannello con i moduli di post-exploitation utilizzabili sui bot del pannello sottostante, mentre a destra si può controllare la posizione geografica del bot. 
+
+Cliccando sull'icona del terminale in corrispondenza di un bot nel pannello inferiore, reindirizza il browser verso una schermata in cui viene emulato un terminale. Questo è collegato al bot attraverso reverse-shell e può essere usato per operare direttamente sul bot.
+\begin{figure}[hbtp]
+    \centering
+    \begin{subfigure}{0.45\textwidth}
+        \includegraphics[width=\textwidth , height=6cm]{res/fig/byob-payloads.png}
+        \caption{}
+        \label{fig:byobpayloads}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.45\textwidth}
+        \centering
+        \includegraphics[width=\textwidth , height=6cm]{res/fig/byob-console.png}
+        \caption{}
+        \label{fig:byobconsole}
+    \end{subfigure}
+    \caption{(a) Schermata di generazione dei payloads; (b) Byob console.}
+    \label{ciao2}
+\end{figure}
+
+In \Cref{fig:byobpayloads} si può esservare la schermata di creazioned dei payloads. I payload possono essere eseguibili compilati o script Python. Una volta creati possono essere scaricati da questa pagina web.
+
+Byob può essere anche eseguito nella sua variante minimale da console ( \Cref{fig:byobconsole}).
+
+
+Attraverso il pannello di controllo o le console è possibile controllare i bot ed eseguire le classiche funzionalità RAT o eseguire moduli python arbitrari, rendendo di fatto possibile eseguire qualsiasi operazione\footnote{per alcune operazioni può essere necessaria l'autenticazione come amministratore} sulle macchine vittime.
+
+
+\section{Dettagli implementativi}
+Nella seguente sezione verranno descritti più nel dettaglio i principali componenti su cui è basata la Botnet.
+
+\subsection{Server}
