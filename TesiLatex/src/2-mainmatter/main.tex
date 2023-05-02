@@ -1184,3 +1184,169 @@ Attraverso il pannello di controllo o le console è possibile controllare i bot 
 Nella seguente sezione verranno descritti più nel dettaglio i principali componenti su cui è basata la Botnet.
 
 \subsection{Server}
+Lo script \textit{Server.py} è il responsabile dell'esecuzione del server e di tutte le sue funzionalità. In \Cref{fig:byobumlserver} si può vedere un diagramma di sequenza che ne descrive il comportamento.
+
+Al momento dell'esecuzione crea tre sottoprocessi che eseguiranno in background:
+\begin{description}
+    \item[Packages handler] Mantiene un server HTTP su porta dedicata incaricato di fornire Python Packages richiesti da bot.
+    \item[Module handler] Mantiene un server HTTP su porta dedicata incaricato di fornire Moduli Python richiesti da bot.
+    \item[Request handler] Gestisce le richieste POST di upload  inviate da bot, salvando i file in apposite directory.
+\end{description}
+Sucessivamente, esegue il C\&C server su un'altra porta dedicata.
+Il C\&C server crea un thread che si occupa di gestire le nuove connessioni inizializzate dai bot. Per ogni nuovo bot connesso crea una sessione, cui informazioni vengono salvate in database ed aggiornate ad ogni connessione. 
+
+Una volta creato il thread, si occupa di gestire i comandi inseriti su console di controllo dei bot e le richieste  dell'interfaccia web.
+Come già osservato nell'introduzione di questo capitolo, Byob può eseguire anche senza interfaccia web e in tal caso la console non è inizialmente collegata ad un bot. La console emulata dell'interfaccia web, invece, è già associata al bot specifico. 
+
+Quando byob esegue in console, ha a disposizione dei comandi, di cui la versione con interfaccia web non ha bisogno, dato che sono integrati all'interno delle pagine web (eg. controllare le sessioni attive).
+
+Durante il ciclo di vita del C\&C, la console  rimane in attesa di input. Quando viene inserito un comando,  ne effettua il parsing per controllare che sia un comando disponibile e nel caso lo esegue con eventuali parametri annessi.
+ Una volta collegata alla sessione del bot, questa rimane in attesa di comandi da inoltrare. 
+ La versione web usa uno script Javascript per inviare una richiesta POST contenenti i comandi digitati al backend che si occupa di inoltrarlo al bot.
+ La versione console invece crea un thread che è incaricato di inviare i comandi direttamente al bot, e li inoltra solo in risposta a richieste di polling da parte del bot.
+ Si può quindi affermare che la versione web sia push-based mentre l'altra pull-based.
+ 
+ Da questo punto in avanti le funzionalità di console e  console web emulata sono identiche, la versione web infatti sfrutta le funzionalità riadattate di Byob versione console.
+
+Il server invia comandi e riceve risultati sotto forma di dizionari contenenti altre informazioni come l'id del bot.
+
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\textwidth]{res/fig/byob-uml-server.png}
+    \caption{Diagramma di sequenza di Byob.}
+    \label{fig:byobumlserver}
+\end{figure}
+
+
+\subsection{Payload}
+
+L'infezione attraverso payload è strutturata su più parti consequenziali.
+
+Il file che la vittima esegue è il \textit{Dropper}.
+Il Dropper scarica dal server lo Stager e lo esegue. Le righe di codice Python reponsabili del download sono inizialmente serializzate,compresse e codificate in base64, per rendere più difficile l'identificazione di codice malevolo da parte strumenti di rilevazione.
+
+Lo Stager, a sua volta, scarica il Payload dal server.  Di default il server invia il payload in chiaro, ma è possibile criptare il contenuto del Payload, in questo caso lo Stager si preoccupa di decriptarlo prima di eseguirlo.
+
+Il Payload è il cuore del malware.
+
+Una volta eseguito instaura una connessione col Server e inizializza due thread, incaricati di ricercare e importare  moduli e packages da remoto, per poi entrare in un loop in attesa di task da eseguire.
+
+Alla ricezione di un task,  esegue il parsing e ne esegue comando, cui  risultato viene incapsulato ed inoltrato al server.
+Nel caso il server operi  senza interfaccia web, viene eseguito un thread incaricato di eseguire polling verso il server, a cui il server occasionalmente risponderà con un task.
+
+In caso la ricezione del comando fosse un modulo, questo viene importato da remoto ed inseguito eseguito.
+
+L'importazione di un modulo (o package) avviene aggiungendo un oggetto di classe Loader, contenenti i metodi \textit{find\_module} e \textit{load\_module}, alla lista di oggeti \textit{sys.meta\_path} ed in seguito eseguendo l'import manuale del modulo. 
+Normalmente, quando l'interprete Python cerca di importare un modulo, naviga la lista \textit{sys.meta\_path} ed esegue il metodo \textit{find\_module} di ciascun oggetto. Questo metodo restituisce un loader del modulo selezionato nel caso lo trovi. Un loader è un oggetto che implementa il metodo \textit{load\_module}.
+Una volta che il loader è stato trovato, ne viene eseguito il metodo \textit{load\_module} che importa il modulo all'interno del contesto.
+
+Byob sfrutta questo meccanismo. Quando esegue l'import manuale di un modulo remoto, l'interprete si imbatte nel loader inserito da Byob all'interno della lista \textit{sys.meta\_path} ed esegue il suo metodo di ricerca. Questo cerca il modulo all'interno della lista di moduli disponibili precedentemente estratta dal server, e nel caso lo trovi ritorna un'istanza di se stesso. Dato che la classe loader di Byob è fornita anche del metodo \textit{load\_module}, può eseguirlo per importare il modulo da remoto.
+
+
+Quando il bot è incaricato di eseguire l'upload di un file verso il server, invia una richiesta POST al sottoprocesso del server, incaricato di gestire le richieste POST, sulla porta dedicata.
+
+\section{Testing e debug}
+Per eseguire il testing, il Server è stato Containerizzato con Docker.
+Il build dell'immagine è stato eseguito attraverso il seguente Dockerfile:
+\lstset{  basicstyle=\footnotesize,
+frame=single}
+\begin{lstlisting}[caption={Byob Server Dockerfile},label={listing-byobdocker},frame=single]
+FROM ubuntu:bionic
+
+WORKDIR /app
+COPY . .
+RUN apt-get update && \
+    apt-get upgrade -y && \
+    apt-get install -y build-essential cmake && \
+    apt-get install -y python3.6 python3-pip && \
+
+WORKDIR /app/web-gui
+RUN python3.6 -m pip install pip --upgrade && \
+    python3.6 -m pip install -r requirements.txt && \
+    rm -rf .gitignore .travis.yml README.md requirements.txt \
+        startup.sh docker-pyinstaller*
+
+EXPOSE 5000 1337 1338 1339
+ENTRYPOINT python3.6 run.py --debug
+\end{lstlisting}
+Il Dockerfile specifica che al momento del build deve essere copiato il sorgente del Server all'interno del container, che devono essere installate tutte le dipendenze necessarie e che devono essere esposte le porte 5000, 1337, 1338, 1339 del Container.
+Per eseguire  il container contenente il server è stato utilizzato  il seguente \textit{bash} script:
+\begin{lstlisting}
+containers=`docker ps -a | grep -A 1 byob | cut -b -12`;
+for x in $containers; do 
+    docker stop $x && docker rm $x ;
+done;
+docker run --name byob-web -it  -p 5000:5000 -p 1337:1337 \
+    -p 1338:1338 -p 1339:1339 -v ./byob:/app   byobserver ;
+\end{lstlisting}
+Lo script interrompe l'esecuzione di tutti i container Byob esistenti e li rimuove prima di eseguire un nuovo container. La porta 5000 dell'host viene mappata alla porta del C\&C  mentre le restanti sono mappate ai servizi di distribuzione dei moduli/packages e    gestione delle richieste POST. La directory contenente il sorgente è stata mappata ad una directory dell'host in modo che fosse facile modificarne il codice all'occorrenza e per fare in modo che alla rimozione del container la directory fosse persistente sulla macchina host. Gli argomenti \textit{-it} sono utilizzati per rendere possibile l'interazione con la shell di debug del container.
+
+Purtroppo il software ha presentato diversi problemi e bug da risolvere nella sua versione \textit{out of the box}. 
+
+La funzionalità di import dei   packages da remoto risulta rotta. In particolare la ricerca confonde i moduli con i packages,  non riusciendo quindi mai a trovare ciò che si desidera poi importare. Il problema è stato aggirato ma non risolto, evitando di perdere troppo tempo su questioni secondarie, importando manualmente da locale i packages necessari.
+
+I moduli di post-exploitation sono compatibili solo con alcuni degli OS e la maggior parte risultava non funzionante. 
+La botnet è stata testata sia con bot Windows che con bot Linux.
+Tra i mooduli  testati e non funzionanti vi sono i moduli per eseguire screenshots, keylogging, cattura del traffico di rete ed uso della  Webcam.
+
+Analizzando il modulo Keylogger si può notare che il modulo risulta scritto in modo errato, forse perché utilizza una versione deprecata di API della libreria che sfruttava per eseguire il suo compito. 
+
+Tra i moduli che invece risultano funzionanti vi erano quello utilizzato per eseguire scansioni delle porte di rete e quello per la gestione dei processi.
+
+Le funzionalità di RAT funzionano correttamente.
+In particolare è stata testata l'esecuzione di codice python arbitrario attraverso riga di comando o  attraverso l'import di moduli creati appositamente.
+
+La  creazione del Payload criptato non funziona correttamente.
+
+
+Le funzionalità di geolocalizzazione, l'import di script di Google Analytics e font scaricati da Internet sono stati rimossi in quanto si appoggiano a servizi web esterni non raggiungibili dall'interno del perimetro di testing, provocando crash dell'applicativo e ritardi nell'esecuzione.
+
+
+
+A seguito di una fase di risoluzione dei problemi che ha richiesto un considerevole impiego di tempo, si è ritenuto opportuno procedere alla verifica con IDS delle sole funzionalità che al momento risultavano operative, per poi procedere con lo studio di un'ulteriore Botnet.
+
+\chapter{Rilevazioni con IDS}
+In \Cref{fig:byob-result-1} si possono vedere gli eventi generati da Security Onion attraverso il modulo Suricata al momento dell'esecuzione del Payload. Gli eventi sono autoesplicativi e fanno riferimento in particolare a:
+\begin{itemize}
+    \item Download di eseguibile;
+    \item Richiesta web verso indirizzo IP;
+    \item Rilevazione di Python all'interno dello user-agent;
+    \item Rilevazione di codice di classe Loader di Byob;
+    \item Rilevazione di codice di Stager di Byob.
+\end{itemize}
+
+Gli eventi più significativi fanno riferimento alla rilevazione di eseguibili e codici maligno noto. Se il download del payload fosse stato criptato nessuna di queste rilevazioni   avrebbe avuto luogo tranne il riferimento all'indirizzo IP.
+\begin{figure}[hbtp]
+    \centering
+    \includegraphics[width=\textwidth]{res/fig/byob-result-1.png}
+    \caption{Rilevazione Security Onion dell'esecuzione del Payload.}
+    \label{fig:byob-result-1}
+\end{figure}
+
+
+In \Cref{fig:byob-results-2-3} si possono osservare le rilevazioni di Security Onion e Ossim in merito all'esecuzione del modulo di scansione di rete.
+
+Le funzionalità di RAT attraverso reverse-shell e l'utilizzo di moduli Python generici costruiti ad-hoc non sono stati rilevati.
+Questo perché  Suricata non ha fingerprints che facciano riferimento ai moduli da noi creati, mentre i comandi inoltrati attraverso reverse-shell sono criptati con AES-256 e non vi è modo di identificare quel traffico di rete come maligno sfruttando solo SIDS.
+%inserire test con import di miner che strelka dovrebbe rilevare specificando che import non è criptato e quindi può leggere.
+
+\begin{figure}[hbtp]
+    \centering
+    \begin{subfigure}{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{res/fig/byob-result-2.png}
+        \caption{Security Onion}
+        \label{fig:byob-result-2}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{res/fig/byob-result-3.png}
+        \caption{Ossim}
+        \label{fig:byob-result-3}
+    \end{subfigure}
+    \caption{Rilevazioni della scansione di rete eseguita da bot attraverso modulo apposito.}
+    \label{fig:byob-results-2-3}
+\end{figure}
+
