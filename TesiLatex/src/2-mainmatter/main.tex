@@ -21,7 +21,7 @@ Parte importante della comunicazione della botnet è il \emph{coordinamento}. I 
 
 Lo schema di comunicazione della botnet può essere separato in più parti: \emph{propagazione} e \emph{operazione}. Questi passi, dal punto di vista dell'host compromesso, possono avvenire solo sequenzialmente dato che l'infezione deve avvenire prima che il bot possa divenire operazionale. 
 \subsection{Propagazione}
-La parte di \emph{propagazione} é la fase in cui si cerca di reclutare nuovi bot. È la prima fase in nel ciclo di vita di un bot, ed è una fase importante dato che la potenza di una Botnet aumenta con la sua grandezza \footnote{eg. botnet capace di attacchi DDoS è più efficiente se ha più bot attraverso il quale generare traffico di rete}. Un'eccezione a questo sono gli APT (Advanced Persistent Threat) che sono attacchi mirati solitamente, e quindi necessitano solo di un limitato numero di macchine, oltre al fatto che devono rimanere nascoste nel sistema il più a lungo possibile, evitando dunque di propagarsi per non rischiare di essere rilevate.
+La parte di \emph{propagazione} è la fase in cui si cerca di reclutare nuovi bot. È la prima fase in nel ciclo di vita di un bot, ed è una fase importante dato che la potenza di una Botnet aumenta con la sua grandezza \footnote{eg. botnet capace di attacchi DDoS è più efficiente se ha più bot attraverso il quale generare traffico di rete}. Un'eccezione a questo sono gli APT (Advanced Persistent Threat) che sono attacchi mirati solitamente, e quindi necessitano solo di un limitato numero di macchine, oltre al fatto che devono rimanere nascoste nel sistema il più a lungo possibile, evitando dunque di propagarsi per non rischiare di essere rilevate.
 
 La propagazione può avvenire attivamente o passivamente.
 Entrambi i metodi di propagazione implicano che l'host vittima venga infettato con l'eseguibile di riferimento della  Botnet. 
@@ -1107,7 +1107,7 @@ Si compone di quattro categorie di moduli principali:
 
 I moduli Core racchiudono le funzionalità principali di Byob e sono utilizzate all'interno del Client Module e del Server Module.  
 
-Il modulo Server viene utilizzato per inizializzare il C\&C Server. Utilizza Flask \cite{flask} come framework e  dispone di un database Sqlite \cite{sqlite} per mantenere i dati e le sessioni dei bot anche a distanza di tempo e in presenza di disconnessioni. Offre controllo sui bot attraverso console collegata via \textit{reverse-shell}\footnote{shell remota a cui viene reindirizzato input e output verso host che vuole accedervi} o attraverso interfaccia web dedicata. Basato su topologia centralizzata con paradigma push-based (il server invia i comandi ai bot).
+Il modulo Server viene utilizzato per inizializzare il C\&C Server. Utilizza Flask \cite{flask} come framework per le funzionalità di web server e  dispone di un database Sqlite \cite{sqlite} per mantenere i dati e le sessioni dei bot anche a distanza di tempo e in presenza di disconnessioni. Offre controllo sui bot attraverso console collegata via \textit{reverse-shell}\footnote{shell remota a cui viene reindirizzato input e output verso host che vuole accedervi} o attraverso interfaccia web dedicata. Basato su topologia centralizzata con paradigma push-based (il server invia i comandi ai bot).
 
 Il modulo Client è utilizzato per creare i payloads che verranno utilizzato per generare i bot. In particolare il payload è un multi-stage installer che verrà analizzato meglio nel dettaglio.  Il bot così generato sarà in grado di importare moduli necessari e arbitrari direttamente dal server e di caricarli in memoria, non lasciando così traccie su disco. Questo meccanismo permette al bot di non avere dipendenze pregresse se non avere Python installato. Tuttavia per ovviare anche a questa dipendenza è possibile creare eseguibili che includano all'interno, oltre al payload, un interprete Python stand-alone, così che neanche Python risulti più una dipendenza.  Il payload può anche essere opzionalmente criptato e opzionalmente può abortire l'esecuzione se rileva che il sistema sul quale sta eseguendo é una macchina virtuale.
 
@@ -1151,6 +1151,7 @@ Oltre a questi moduli built-in, il bot può anche importare moduli creati ad-hoc
     \label{ciao1}
 \end{figure}
 
+L'interfaccia web del C\&C è  dotato di sistema di autenticazione, per impedire che terzi possano prenderne il controllo facilmente. Quindi prima di poter interagire con le funzionalità che offre l'interfaccia web è necessario eseguire il login nell'apposita pagina web.
 Nella \Cref{fig:byobhome}  si può vedere la schermata di controllo principale dell'interfaccia web di Byob. In basso è presente una schermata con i bot attualmente collegati. Sul lato sinitro sinistro vi è  un pannello con i moduli di post-exploitation utilizzabili sui bot del pannello sottostante, mentre a destra si può controllare la posizione geografica del bot. 
 
 Cliccando sull'icona del terminale in corrispondenza di un bot nel pannello inferiore, reindirizza il browser verso una schermata in cui viene emulato un terminale. Questo è collegato al bot attraverso reverse-shell e può essere usato per operare direttamente sul bot.
@@ -1272,7 +1273,7 @@ ENTRYPOINT python3.6 run.py --debug
 \end{lstlisting}
 Il Dockerfile specifica che al momento del build deve essere copiato il sorgente del Server all'interno del container, che devono essere installate tutte le dipendenze necessarie e che devono essere esposte le porte 5000, 1337, 1338, 1339 del Container.
 Per eseguire  il container contenente il server è stato utilizzato  il seguente \textit{bash} script:
-\begin{lstlisting}
+\begin{lstlisting}{caption={Bash script per eseguire Byob in Docker Container},label={listing-byobscript1}}
 containers=`docker ps -a | grep -A 1 byob | cut -b -12`;
 for x in $containers; do 
     docker stop $x && docker rm $x ;
@@ -1307,6 +1308,8 @@ Le funzionalità di geolocalizzazione, l'import di script di Google Analytics e 
 A seguito di una fase di risoluzione dei problemi che ha richiesto un considerevole impiego di tempo, si è ritenuto opportuno procedere alla verifica con IDS delle sole funzionalità che al momento risultavano operative, per poi procedere con lo studio di un'ulteriore Botnet.
 
 \chapter{Rilevazioni con IDS}
+
+
 In \Cref{fig:byob-result-1} si possono vedere gli eventi generati da Security Onion attraverso il modulo Suricata al momento dell'esecuzione del Payload. Gli eventi sono autoesplicativi e fanno riferimento in particolare a:
 \begin{itemize}
     \item Download di eseguibile;
@@ -1316,7 +1319,6 @@ In \Cref{fig:byob-result-1} si possono vedere gli eventi generati da Security On
     \item Rilevazione di codice di Stager di Byob.
 \end{itemize}
 
-Gli eventi più significativi fanno riferimento alla rilevazione di eseguibili e codici maligno noto. Se il download del payload fosse stato criptato nessuna di queste rilevazioni   avrebbe avuto luogo tranne il riferimento all'indirizzo IP.
 \begin{figure}[hbtp]
     \centering
     \includegraphics[width=\textwidth]{res/fig/byob-result-1.png}
@@ -1324,12 +1326,14 @@ Gli eventi più significativi fanno riferimento alla rilevazione di eseguibili e
     \label{fig:byob-result-1}
 \end{figure}
 
+Gli eventi più significativi fanno riferimento alla rilevazione di eseguibili e codici maligno noto. Se il download del payload fosse stato criptato nessuna di queste rilevazioni   avrebbe avuto luogo tranne il riferimento all'indirizzo IP.
 
 In \Cref{fig:byob-results-2-3} si possono osservare le rilevazioni di Security Onion e Ossim in merito all'esecuzione del modulo di scansione di rete.
 
 Le funzionalità di RAT attraverso reverse-shell e l'utilizzo di moduli Python generici costruiti ad-hoc non sono stati rilevati.
 Questo perché  Suricata non ha fingerprints che facciano riferimento ai moduli da noi creati, mentre i comandi inoltrati attraverso reverse-shell sono criptati con AES-256 e non vi è modo di identificare quel traffico di rete come maligno sfruttando solo SIDS.
 %inserire test con import di miner che strelka dovrebbe rilevare specificando che import non è criptato e quindi può leggere.
+
 
 \begin{figure}[hbtp]
     \centering
@@ -1350,3 +1354,553 @@ Questo perché  Suricata non ha fingerprints che facciano riferimento ai moduli 
     \label{fig:byob-results-2-3}
 \end{figure}
 
+
+\chapter{Agent}
+Un agente o agent è un software  definito a largo modo  come un programma che può esercitare l'autorità di un individuo o di un'organizzazione, lavorare autonomamente per raggiungere un obiettivo e interagire con altri agenti e con l'ambiente circostante \cite{jansen2002intrusion}. 
+Esso si compone di codice ed informazioni sullo stato del sistema per seguire computazioni. Inoltre, richiede una piattaforma sui cui eseguire.
+%here1
+
+Gli agent possono essere statici o mobili. Quelli statici rimangono fissi in una singola piattaforma mentre quelli mobili sono in grado di fermare la computazione, spostarsi su un'altra piattaforma e riprendere con l'esecuzione del proprio codice.
+
+La piattaforma d'origine di un agent è chiamata \textit{home platform} e normalmente è l'ambiente considerato più sicuro per l'agent.
+Una piattaforma può avere molteplici luoghi in cui più agent possono interagire.
+
+La tecnologia degli agenti mobili ha tratto beneficio dal lavoro svolto sugli agenti intelligenti e sullo sviluppo di sistemi software capaci di supportare codice su hardware eterogeneo (eg. Java e Java Virtual Machine sono un esempio di sistema software capace di portare codice eseguibile su qualsiasi sistema operativo). Con agente intelligente si intende  agenti statici autonomi capaci di applicare la conoscenza del dominio dell'applicazione. Gli agenti intelligenti incorporano la capacità di decomporre e risolvere problemi in modo collaborativo. Gli agenti osservano il loro ambiente, ragionano sulle proprie azioni e su quelle degli altri agenti, interagiscono con altri agenti ed eseguono le proprie azioni in modo concorrente con altri agenti.
+ Attraverso le interazioni possono scambiarsi informazione tramite un linguaggio di comunicazione degli agenti e possono collaborare per creare una conoscenza comune su un argomento.
+
+Anche se gli agenti mobili mantengono le caratteristiche di autonomia e collaborazione degli agenti intelligenti, l'accento è sulle caratteristiche di mobilità, spesso basandosi su algoritmi semplici e diretti per il ragionamento e la collaborazione attraverso una meno elaborata interpretazione dei messaggi.
+
+
+La capacità di spostare una computazione tra diversi nodi offre vantaggi rispetto agli attuali sistemi di rilevamento delle intrusioni che si basano su computazioni staticamente posizionate. Per poter applicare la tecnologia degli agenti mobili alla rilevazione delle intrusioni, i nodi partecipanti (cioè gli host e i dispositivi di rete) devono avere installata una piattaforma per agenti. Poiché molti sistemi di agenti funzionano su una vasta gamma di hardware e software, questo requisito non è difficile da soddisfare. Con la tecnologia degli agenti mobili, i nodi di raccolta, di aggregazione interna e di comando e controllo non devono essere continuamente residenti sulla stessa macchina fisica. Ad esempio, un agente mobile può funzionare come nodo di aggregazione e spostarsi in qualsiasi posizione fisica nella rete che sia migliore per i suoi scopi. Il paradigma degli agenti mobili offre inoltre la possibilità di specializzazione: gli agenti possono essere diversi per funzioni diverse, ognuno alla ricerca di attacchi distinti e di conseguenza elaborando i dati in modo specifico.
+
+
+La tecnologia degli agenti mobili può potenzialmente superare alcune limitazioni intrinseche degli IDS  che utilizzano solo componenti statici. Ciò non significa che le caratteristiche degli agenti mobili in sé siano sufficienti per ottenere miglioramenti . Quando si applicano agenti mobili a questo dominio di applicazione, sono comunque necessarie scelte di progettazione accurate per sfruttare le loro caratteristiche. In particolare, il tipo di coordinamento del livello di conoscenza richiesto per rilevare e rispondere alle intrusioni pone molte esigenze sugli agenti, tra cui localizzare altri agenti con le capacità necessarie, comunicare efficacemente con loro utilizzando un vocabolario comune e coordinare le azioni da intraprendere per affrontare congiuntamente una situazione data. In passato sono stati identificati diversi vantaggi nell'utilizzo degli agenti mobili rispetto ai loro omologhi statici \cite{lange1998mobile,smith1988survey,vuong2011advanced}:
+
+\begin{description}
+    \item [Diminuire la latenza di rete] Grazie alla loro capacità di essere inviati per eseguire operazioni direttamente al punto di interesse remoto, gli agenti mobili sono in grado di rispondere in tempo reale ai cambiamenti dell'ambiente. Oltre a rilevare e diagnosticare potenziali intrusioni di rete, gli agenti mobili possono fornire meccanismi di risposta adeguati, tra cui la raccolta di informazioni sull'attacco inviate al bersaglio o emesse da esso, la chiusura o l'isolamento di un sistema sotto attacco per proteggerlo da ulteriori danni, il tracciamento del percorso dell'attacco e la chiusura o l'isolamento del sistema dell'attaccante se l'attacco viene lanciato da un host interno;
+    \item[Ridurre il carico di rete] Piuttosto che trasferire i dati attraverso la rete per eseguire computazioni su questi, gli agenti mobili possono essere inviati direttamente alla macchina in cui risiedono i dati, portando il la computazione vicino ai dati invece di dover spostare i dati  verso la computazione. Ciò consente di ridurre il carico sulla rete;%Inoltre, in caso la confidenzialità sia una necessità, spostare un agente crittografato e i suoi dati elaborati può risultare più efficiente rispetto al trasferimento di tutti i dati grezzi in forma crittografata.
+    \item [Esecuzione autonoma e distribuita] Per grandi sistemi distribuiti, è essenziale la capacità del sistema di continuare a funzionare quando parti di esso vengono distrutte o vengono isolate. Gli agenti mobili possono esistere e funzionare in modo indipendente dalla piattaforma di creazione, rendendoli utili come componenti di IDS, poiché gli agenti che sopravvivono a un attacco potrebbero essere in grado di ricostituire le componenti danneggiate (ad esempio, clonandole) e ripristinare la funzionalità;
+    \item [Adattamento dinamico] I sistemi di agenti mobili sono in grado di rilevare il proprio ambiente e adattarsi ai cambiamenti, rendendoli particolarmente utili nella rilevazione delle intrusioni. Gli agenti possono muoversi in modo autonomo per migliorare la loro posizione o evitare situazioni pericolose, clonarsi per garantire la ridondanza e l'esecuzione parallela, o unirsi ad altri agenti per ottenere assistenza. Inoltre, possono adattarsi in modo flessibile a situazioni sfavorevoli o favorevoli. Grazie alla loro esecuzione autonoma e asincrona, queste caratteristiche consentono di costruire sistemi robusti e in grado di tollerare i guasti;
+    \item [Indipendenza dalla piattaforma]  I sistemi di agenti forniscono un ambiente di calcolo astratto per gli agenti, indipendente dall'hardware e dal software del computer su cui viene eseguito. Queste caratteristiche rendono questo ambiente un'opzione adatta per le applicazioni di gestione di rete in generale e di rilevazione delle intrusioni in particolare, permettendo agli agenti di muoversi relativamente liberamente all'interno di un dominio. Questo è particolarmente vantaggioso per i meccanismi di risposta, poiché quando viene rilevata un'intrusione, i rimedi possono essere applicati o avviati da quasi qualsiasi punto della rete. Inoltre, i meccanismi di rilevamento beneficiano della mobilità diffusa degli agenti, che ha il potenziale di acquisire e unire facilmente dati da diverse fonti di rete.
+    \item [Software upgrade] Per aggiornare il software su più host, di solito l'amministratore deve fermare il server, disinstallare la vecchia versione del software e reinstallare la nuova versione. Ciò comporta la necessità di fermare l'intero sistema software. Tuttavia, se ogni componente del software è gestito da un agente, è possibile semplicemente disabilitare l'agente vecchio e distribuire un nuovo agente con le funzionalità richieste, senza interrompere l'intero sistema. Questo approccio consente di fermare solo il componente basato su agente che necessita di aggiornamento, evitando di fermare l'intero sistema.
+\end{description}
+
+
+Anche se il nostro interesse è associare gli  agenti mobili alla rilevazione delle intrusioni, è improbabile che la piena mobilità di tutti i componenti di un IDS sia  efficace in pratica, a causa dell'eccessivo overhead associato. Pertanto, alcuni componenti dell'IDS vengono designati come agenti statici o rimangono statici una volta implementati. Ciò consente l'applicazione del paradigma dell'agente mobile, ma si basa sulla mobilità solo dove appropriato.
+
+\smallskip
+
+Gli agenti mobili non migliorano direttamente le tecniche di rilevamento, ma possono modellare l'applicazione di tali tecniche migliorandone l'efficienza e l'efficacia. Un'area di potenziale utilizzo è la riduzione dell'enorme quantità di dati di log distribuiti tra i nodi interni di un sistema IDS convenzionale. I mobile agent possono visitare i repository dei dati e analizzare i risultati, trasferendo il calcolo ai dati stessi. Questo approccio riduce il carico di rete e consente agli agenti specializzati di concentrarsi su classi specifiche di intrusioni.
+
+Un altro utilizzo dei mobile agent è la minimizzazione della capacità di un attaccante di ingannare un IDS. Gli agenti possono replicarsi e risiedere su più piattaforme, eliminando tali tentativi. Passare da IDS basati su rete a agenti di rilevamento basati su host che funzionano contemporaneamente riduce anche la possibilità di pacchetti persi e massimizza la possibilità di innescare una risposta rapida a una intrusione rilevata. Inoltre, avere componenti residenti sull'host fornisce l'unico modo per l'IDS di visualizzare i pacchetti in testo normale, nelle situazioni in cui l'host utilizza la crittografia a livello di rete.
+
+I mobile agent possono agevolare l'implementazione di architetture IDS robuste e resistenti agli attacchi \cite{mell2000denial}. Gli agenti si spostano quando rilevano pericolo o attività sospette, si clonano per garantire la ridondanza o la sostituzione, operano autonomamente e in modo asincrono rispetto al luogo di creazione, collaborano e condividono conoscenze, e si auto-organizzano per ovviare ad anomalie. Inoltre, gli agenti si prestano alla diversità genetica, che aiuta ad evitare attacchi mirati a eludere i meccanismi di rilevamento noti e stabili dell'IDS.
+
+Il maggior potenziale dei mobile agent risiede nella risposta a un'incursione piuttosto che nel suo rilevamento. Poiché le risposte possono essere avviate da quasi ovunque nella rete, i mobile agent possono gestire gli attacchi in modo più ottimale rispetto a un IDS convenzionale.
+
+Alcuni dei vantaggi nell'implementare un mobile agent per rispondere ad intrusioni possono essere:
+\begin{description}
+    \item [Tracciatura di un attaccante] Gli attaccanti spesso si insinuano all'interno di una catena di moltli host prima di attaccare l'obiettivo e generalmente falsificano l'indirizzo di origine. Per trovare l'attaccante l'IDS deve ispezionare la catena di host per trovare il responsabile dell'inoltro dei pacchetti considerati come maligni. Per eseguire una tale traccia l'IDS deve essere in grado di analizzare il traffico di rete di ogni segmente di rete ed ogni host. In genere tale compito sarebbe troppo dispendioso ma è realizzabile  con una base di agent abbastanza ampia.
+    \item [Risposta in host target] Quando un attacco veine rilevato è importante poter rispondere alla minaccia all'interno dell'host colpito. Ciò è effettuabile attraverso gli agent.
+    \item [Risposta in sorgente di attacco] Una possibile riformulazione più fluida potrebbe essere: "Per limitare le azioni dell'attaccante, l'IDS può agire direttamente sul suo host, ma ciò richiede l'uso di agenti mobili, altrimenti l'accesso sarebbe limitato. Nonostante questa opzione abbia delle restrizioni, come la necessità che l'attacco provenga dall'interno del dominio di gestione, può comunque essere un'arma molto efficace per l'IDS.
+    \item [Raccolta di evidenze] Al momento, è difficile raccogliere automaticamente prove di attacchi provenienti da molteplici fonti. Ciò è dovuto alla necessità di avere il software adatto eseguito nel luogo e nel momento giusto. Tuttavia, gli agenti mobili possono essere utilizzati per eseguire qualsiasi cosa in qualsiasi momento e ovunque, rendendo possibile la raccolta di prove da diverse piattaforme hardware, sistemi operativi e persino applicazioni come i server web. 
+    \item[Isolamento di target e attaccante] Poiché le azioni per rispondere automaticamente al bersaglio e alla fonte possono fallire, è necessaria  una risposta a livello di rete per limitare le azioni di un attaccante. Ci sono tre strategie generali: bloccare le comunicazioni del bersaglio, bloccare le comunicazioni dell'attaccante e bloccare le comunicazioni tra il bersaglio e l'attaccante. Grazie alla loro capacità di viaggiare in tutti gli elementi della rete per eseguire azioni correttive, gli agenti mobili sono in grado di attuare tali strategie.
+\end{description}
+
+\smallskip
+Il principale ostacolo nell'utilizzo di agenti mobili per la rilevazione delle intrusioni è la sicurezza. L'uso di agenti mobili può introdurre vulnerabilità che possono essere sfruttate da un attaccante per propagare un attacco o sovvertire la rilevazione dell'IDS. Le minacce alla sicurezza per il paradigma di elaborazione degli agenti mobili possono essere classificate in quattro categorie:
+\begin{description}
+    \item [Da agente ad agente] Si verificano quando gli agenti sfruttano le debolezze di sicurezza o lanciano attacchi contro altri agenti che risiedono in stessa piattaforma;
+    \item [Da agente a piattaforma]  Si verificano quando gli agenti sfruttano le debolezze di sicurezza o lanciano attacchi contro una piattaforma di agenti in cui risiedono;
+    \item [Da piattaforma ad agente]  Si verificano quando le piattaforme di agenti compromettono la sicurezza degli agenti che risiedono lì;
+    \item [Da altri a piattaforma] si verificano quando entità esterne, inclusi agenti e piattaforme di agenti situati altrove sulla rete, minacciano la sicurezza di una piattaforma di agenti, inclusi il suo sistema operativo sottostante e il servizio di comunicazione di rete.
+\end{description}
+
+\smallskip
+
+In linea di principio, queste minacce non sono diverse da quelle che affrontano altre applicazioni distribuite e possono essere gestite con tecniche di sicurezza convenzionali, come l'isolamento degli agenti dagli altri agenti e dalla piattaforma di agenti, la sicurezza del linguaggio e del codice, l'accesso controllato alle risorse, l'\textit{audit} da parte degli agenti e delle piattaforme e le comunicazioni autenticate e protette. Tuttavia, la categoria da piattaforma ad agente è particolarmente difficile da difendere in applicazioni che richiedono un movimento illimitato degli agenti su Internet.
+
+Tuttavia, la rilevazione di intrusioni ha caratteristiche uniche rispetto alle tipiche applicazioni Internet. Coinvolge un dominio chiuso e un ristretto gruppo di utenti noti, il che consente di implementare difese adeguate. In generale, le applicazioni di gestione di rete presentano le stesse caratteristiche, il che rende possibile l'adozione di contromisure efficaci
+
+Dato che l'obiettivo è garantire che l'utilizzo di agenti mobili nella rilevazione di intrusioni offra una protezione almeno pari, se non superiore, a quella fornita da un IDS convenzionale, il principio alla base di questo approccio risulta essere consentire agli agenti di muoversi liberamente tra host affidabili all'interno del loro dominio di sicurezza, facendo in modo che ogni piattaforma imponga le stesse politiche di sicurezza, concedendo o negando gli stessi privilegi che aveva sulla piattaforma precedente \cite{jansen2002intrusion}.
+
+Per fare in modo che le componenti critiche del sistema di agenti mobili rimangano al sicuro, questi possono spostarsi verso le componenti più robuste dell'IDS, sfruttando quindi l'affidabilità del sistema di IDS.
+
+\smallskip
+
+La firma digitale è un meccanismo chiave di protezione. Tutti gli agenti di gestione devono avere un codice firmato da un amministratore e superare la convalida prima di essere eseguiti sulla piattaforma dell'agente. In questo modo, si impedisce ad un attaccante di modificare il codice di un agente o di creare un agente falso. Combinando la firma digitale con la capacità delle piattaforme degli agenti di autenticarsi reciprocamente prima di consentire lo spostamento di un agente, diventa molto difficile attaccare direttamente il paradigma degli agenti mobili.
+
+\smallskip
+
+Per aggirare il sistema degli agenti, un attaccante deve essere in grado di penetrare con successo nel sistema host che supporta la piattaforma degli agenti. Un attacco andato a buon fine su un sistema basato su agenti può compromettere gli agenti che stazioneranno sulla piattaforma dell'host infetto. L'attaccante quindi in seguito alla riuscita dell'attacco potrebbe terminare agenti, falsificare informazioni in loro possesso o modificare le loro informazioni di stato.
+
+
+Il problema nel terminare un agent è che l'IDS potrebbe notare la sua assenza e quindi aumentare il livello di allerta e  inviare agenti in risposta sul nodo ritenuto infetto. La falsificazione delle informazioni risulta quindi una miglior scelta, seppur potenzialmente complicata da implementare (potrebbe risultare difficile modificare le informazioni senza alterare il corretto funzionamento dell'agente o venire identificati dall'IDS).
+
+Anche nel caso l'attaccante riesca nell'intento di prendere controllo di un agent, spesso molti sistemi offrono un modo per limitare le capacità di un agent attraverso la gestione dei privilegi. Sebbene non tutti gli agenti che eseguono attività di gestione necessitino di un alto livello di autorizzazione, alcuni agenti potrebbero dover essere eseguiti con privilegi amministrativi.
+
+\section{Wazuh}
+
+Wazuh \cite{wazuh} è una piattaforma open-source utilizzata per rilevamento, prevenzione e risposta di minacce. È in grado di proteggere i carichi di lavoro su ambienti on-premise, virtualizzati, containerizzati e basati su cloud.
+
+Il sistema è composta da un server di management e da uno o più agent installati sugli \textit{end-point} da monitorare. Il server colleziona e analizza i dati recuperati dagli agent.
+
+\subsection{Architettura e funzionamento}
+Wazuh è composto dei seguenti componenti:
+\begin{description}
+    \item [Indexer] Componente in cui sono memorizzati gli \textit{alert} generati;
+    \item [Server] Analizza i dati ricevuti dagli agent. Un singolo server può analizzare dati provenienti da decine di migliaia di agenti e scalare orizzontalmente all'occorrenza attraverso \textit{clustering}.
+    \item [Dashboard] Interfaccia web utilizzata per visualizzare e analizzare dati.  Può essere utilizzata anche per configurare Wazuh.
+    \item [Agent] Sono installati sui server da monitorare, sono statici e inviano i log al server.
+\end{description}
+
+L'agent invia continuamente eventi al server per analisi e rilevazione di minacce. Per inoltrare i dati, l'agent stabilisce una connessione col servizio che gestisce le connessioni del server, che è in ascolto sulla porta 1514 di default.  Il server alla ricezione degli eventi ne esegue il \textit{decoding}. Con decoding si intende estrarre informazioni da un evento ricevuto che verranno utilizzate per l'analisi. In seguito compara le informazioni così estratte dagli eventi con le regole interne. Le regole interne vengono utilizzate per generare alert in caso di match.
+Sia gli eventi che gli alert vengono memorizzati all'interno del server.
+
+La comunicazione tra agent e server è criptata attraverso AES.
+
+Il server a sua volta invia gli eventi e gli alert all'indexer attraverso Filebeat e con comunicazione criptata attraverso TLS.
+I dati vengono quindi indicizzati e la dashboard può essere utilizzata per reperire e visualizzare le informazioni indicizzate.
+
+Wazuh è anche fornito di un API RESTful utilizzabile per visualizzare e modificare configurazioni e status di server e agent.
+
+
+
+
+\chapter{Studio Botnet 2 - UBoat}
+%descrizione ad alto livello OK
+%descrizione dettagli OK
+%deploy (docker) , debug e testing
+%rilevazioni senza agent
+%rilevazioni con agent
+
+
+
+
+UBoat \cite{uboat} rappresenta un progetto open-source di Botnet basato su HTTP, volto a fornire una dimostrazione concreta (\textit{proof of concept}) di una classica Botnet centralizzata, con finalità prettamente educative. È scrittai in linguaggio C++ senza alcuna dipendenza esterna e permette ridondanza di comunicazione col C\&C attraverso un server di \textit{fall-back}.
+
+Tra le funzionalità operazionali built-in  di questa Botnet vi sono:
+\begin{itemize}
+    \item Persistenza all'interno delle macchine infette per prevenire la perdita del controllo su di esse;
+    \item Possibilità di DDoS basato su traffico TCP;
+    \item Esecuzione di comandi e  processi da remoto;
+    \item Update della Botnet;
+    \item Download ed esecuzione di altri malware;
+    \item Capacità di keylogging;
+    \item Estrapolazione di screenshot da macchina infetta;
+\end{itemize}
+
+Il server di comando mette a disposizione, previa autenticazione, un'interfaccia web che consente di gestire e visualizzare i bot connessi ad esso.
+\begin{figure}[hbtp]
+    \centering
+    \begin{subfigure}{0.45\textwidth}
+        \centering
+        \includegraphics[width=\textwidth,height=0.45\textwidth]{res/fig/uboat-home.png}
+        \caption{}
+        \label{fig:uboat-home-1}
+    \end{subfigure}
+    \begin{subfigure}{0.45\textwidth}
+        \centering
+        \includegraphics[width=\textwidth,height=0.45\textwidth]{res/fig/uboat-map.png}
+        \caption{}
+        \label{fig:uboat-home-2}
+    \end{subfigure}
+    \caption{Visualizzazione delle informazioni dei  bot}
+    \label{fig:uboat-home}
+\end{figure}
+
+In \Cref{fig:uboat-home-1} si vede l'interfaccia di visualizzazione dei bot che hanno avuto interazioni col server mentre in \Cref{fig:uboat-home-2} è mostrata la pagine web attraverso cui si può controllare la posizione geografica dei bot.
+
+I bot possono essere selezionati per poter eseguire operazioni su di essi, la \Cref{fig:uboat-control} mostra l'interfaccia di comando dei bot attraverso la quale è possibile inoltrare task operazionali.
+\begin{figure}[hbtp]
+    \centering
+    \includegraphics[width=0.45\textwidth]{res/fig/uboat-control.png}
+    \caption{Interfaccia di controllo dei bot.}
+    \label{fig:uboat-control}
+\end{figure}
+
+\section{Dettagli implementativi}
+
+\subsection{Server}
+Il C\&C é composto di un web server, cui tecnologia è   a discrezione dell'utente, e di MariaDB, un Database Management System (DBMS) relazionale.
+Mantiene le informazioni dei bot, i comandi inseriti ed altre informazioni all'interno del database. Il web server e la relativa interfaccia web sono  raggiungibili attraverso la porta 8080 dell'host che ospita il web server.
+
+Una volta che il server è operativo, aspetta che un bot si metta in contatto con esso.
+Il bot comunica con il server attraverso comandi di \textit{Join} o di \textit{Poll} attraverso richieste HTTP. Il primo viene utilizzato per iniziare la comunicazione col server. Alla ricezione del comando di Join quindi il server controlla che il bot sia presente all'interno del database e nel caso non lo fosse viene aggiunto. Il comando di Poll invece, viene utilizzato per richiedere comandi al server. Questa peculiarità  definisce la Botnet come pull-based.
+Il server riceve anche comandi contenenti l'esito dei task inoltrati.
+
+
+Il server inoltre,  mantiene un ulteriore processo in background che esegue codice PHP. Questo   si occupa di gestire l'upload degli screenshot, inviati dai bot attraverso richieste HTTP POST.
+\subsection{Payload}
+Il payload usa librerie di Windows per svolgere i propri task e quindi é eseguibile solo su tale sistema operativo.
+
+All'avvio dell'esecuzione del payload, il Bot crea un thread che ha lo scopo di creare persistenza all'interno della macchina vittima.  Per prima cosa crea una directory all'interno del sistema e vi posiziona all'interno una copia dell'eseguibile. Successivamente inserisce un record all'interno del registro di sistema Windows.
+Il registro di sistema di Windows è un database gerarchico che archivia le informazioni, le impostazioni e le configurazioni necessarie per il funzionamento  del sistema operativo Microsoft Windows.
+Il record in questione usa la chiave RunOnce all'interno del registro per far sì che il payload venga eseguito ad ogni accesso dell'utente. Infine il thread entra in un loop che si preoccupa di controllare la presenza della copia del payload e della chiave di registro, e nel caso reinserirli.
+
+Una  voltra creato il thread, esegue l'inizializzazione delle \textit{socket} e degli handler dei comandi che riceverà dal server.
+
+In seguito invia un comando di \textit{Join} al server attraverso HTTP, in cui all'interno inserisce le informazioni della macchina infetta ed in particolare:
+\begin{itemize}
+    \item Version di Windows installata;
+    \item Modello di CPU;
+    \item Versione di framework .NET\footnote{ambiente di esecuzione realtime della piattaforma .NET \cite{netframework}} installata;
+    \item Quantità di RAM;
+    \item Se l'utente ha diritti di amministratore;
+    \item Identificativo Hardware (HWID) associato al dispositivo.
+\end{itemize}
+In fine entra in un loop che si occupa di gestire la comunicazione col server e tutte le fasi operazionali di cui è incaricato.
+Entrando nei dettagli del loop, invia periodicamente un comando di Poll  a cui master risponde all'occorrenza con il prossimo comando da eseguire. Quando il comando viene ricevuto, ne esegue il parsing e nel caso sia un comando riconosciuto esegue l'handler ad esso associato. Infine attenda una quantità di tempo preimpostata prima di ripetere il ciclo e quindi di rieffettuare il polling verso il server.
+
+\medskip
+Un comando è composto di tre campi: identificativo, tipo e dati.
+Il campo dei dati è utilizzato per passare parametri aggiuntivi al bot o per l'inoltro di risultati di operazioni al server.
+
+%descrizione parser
+Nella sezione di codice \ref{listing-uboat1} si può osservare un esempio di handler dei comandi. L'handler in esame è  responsabile di inoltrare uno screenshot al server.  In primo luogo analizza i dati aggiuntivi passati come parametro per estrapolare la porta a cui è associato il processo incaricato di gestire gli upload. In seguito viene eseguito lo screenshot e inoltrato al server sulla porta specificata. Infine invia l'esito del task al server con un ulteriore comando.
+
+
+
+
+%aggiunta descrizione creazione comando
+
+\medskip
+
+L'inoltro di un comando è preceduto da una fase di offuscamento di seguito descritta: 
+\begin{enumerate}
+    \item Generazione di una chiave di 32 Byte generata con algoritmo pseudocasuale;
+    \item Il comando, compreso dei tre campi precedentemente descritti, viene combinato con la chiave attraverso Xor.
+    \item Il comando e la chiave vengono codificati in Url \textit{charset}.
+    \item La chiave viene inserita negli headers della richiesta POST mentre il comando nel \textit{body}.
+\end{enumerate}
+
+\lstset{numbers=left,tabsize=2}
+\begin{lstlisting}[float,floatplacement=H,caption={Esempio di handler di comandi},captionpos=b,label={listing-uboat1}]{numbers=left}
+void ScreenshotParser(int commandId, int commandType, char* data)
+{
+	int len;
+	char** splitResults = SplitString(data, "@", &len, false);
+	unsigned short port = (unsigned short)strtoul(splitResults[1], NULL, 0);
+
+	int length;
+	char* scr = CaptureScreenshot(&length);
+
+	bool result = SendScreenshot(splitResults[0], port, scr, length,
+            GetBotId());
+	FreeSplitStringBuffer(splitResults, len);
+
+	char* command = CreateCommand(commandId, commandType,
+            result ? "Success" : "Fail", result ? 7 : 4);
+	FreeScreenshot(scr);
+	char* response = SendCommandWithDecodedResponse(command);
+	FreeDecodedResponse(response);
+}
+\end{lstlisting}
+
+\section{Deploy, testing e debug}
+Il deploy del server è stato eseguito attraverso containerizzazione del web server e del DBMS. In particolare è stato utilizzado Docker Compose per eseguire contemporaneamente entrambi i container attraverso un unico file di configurazione ed un unico comando.
+Questo (\ref{listing-uboat2}) illustra le porte e le directory da mappare, le variabili d'ambiente da utilizzare per la configurazione di MariaDB, nonché altre informazioni pertinenti, come la rete a cui associare i servizi e informazioni di risoluzione dei container.
+L'handler delle richieste di upload veniva eseguito dall'interno del container all'occorrenza, eseguendo uno script PHP in background.
+
+\medskip 
+Dopo aver configurato l'indirizzo del server  C\&C nel codice sorgente del payload e installato gli strumenti necessari, come il Software Developer Kit (SDK) e i Build Tools, il payload è stato compilato ed eseguito in Visual Studio. Questo ha permesso di utilizzare il \textit{debugger} integrato dell'IDE per analizzare il funzionamento del bot.
+
+\medskip
+Prima di procedere con il test della Botnet, sono state apportate alcune modifiche al fine di risolvere alcuni dei bug individuati, i quali verranno di seguito descritti:
+\begin{itemize}
+    \item Le richieste HTTP del server non erano indirizzate verso il corretto percorso di rete (path).
+    \item Quando il bot inviava il messaggio di Join al server, le informazioni inserite al suo interno erano posizionate in un ordine differente dall'ordine in cui venivano elaborate dal server. Il server quindi, nel procedere all'inserimento in database dei dati ricevuti, generava un'eccezione, poiché i tipi dei dati inseriti non combaciavano con i tipi dei dati della \textit{query} di inserimento.
+    \item Il percorso in cui venivano salvati i risultati del Keylogger, era formattato erroneamente.
+    \item Una delle directory in cui venivano salvate delle informazioni non era presente al momento dell'esecuzione e non avendo abbastanza permessi per crearla ne conseguiva il malfunzionamento.
+    \item L'inoltro dello screenshot è diviso in due scambi di dati tra server e bot, ma era coordinato male. In particolare vi era un problema di sincronizzazione per via della ricezione non bloccante dei messaggi.
+    \item La funzionalità di persistenza, che prevede l'inserimento di un record nel registro di sistema, presentava un bug che causava l'inserimento continuo della chiave nel registro stesso.
+\end{itemize}
+
+Una volta sistemati questi bug è stato possibile testare le varie funzionalità operative della Botnet:
+\begin{itemize}
+    \item Esecuzione di processo da remoto con possibilità di aggiungere parametri. La possibilità di aggiungere parametri permette anche di eseguire script, ad esempio, eseguendo un'interprete di comandi e passandogli comandi interpretabili;
+    \item Funzionalità DDoS, seppure l'implementazione non sia molto efficiente. Essa infatti consiste di un loop in cui vengono aperte connessioni TCP verso il target per inviare una serie di dati. Per provvedere alla scarsa efficienza della funzionalità built-in, è stato testato un tool di DDoS reperito in Internet, che è stato eseguito per mezzo della funzionalità di esecuzione di processi;
+    \item Keylogging, ovvero la capacità di poter estrapolare  dal bot, in forma di dati, le digitazioni da tastiera dell'utente.
+    \item Download ed esecuzione di eseguibile. Un dettaglio importante che verrà utilizzato nella fase di rilevazione, è che il bot usa l'\textit{esplora risorse} di Windows per eseguire i file scaricati.
+    \item La funzionalità di update del bot è molto simile al \textit{download and execute} già visto. Il bot esegue il download del nuovo payload, lo esegue ed in seguito termina la propria esecuzione per lasciare spazio alla versione aggiornata.
+    \item Capacità di inviare una richiesta HTTP ad un sito web target per controllare che sia operativo. Ritorna esito positivo solo in caso la risposta HTTP abbia codice 200.
+\end{itemize}
+
+
+
+
+
+\begin{lstlisting}[firstnumber=1,floatplacement=H,caption={File di configurazione docker compose},captionpos=b,label={listing-uboat2}]{numbers=left}
+version: '3'
+
+services:
+  webserver:
+    image: uboat-webserver
+    build: .
+    ports:
+      - "80:80"
+      - "25019:25019"
+    volumes:
+      - ./public:/var/www/html
+      - ./src:/var/www/src
+      - ./logs:/var/www/src/logs
+      - ./screenshots:/var/www/src/screenshots
+    links:
+      - mysql
+    networks:
+      - vlan
+
+  mysql:
+    image: mariadb:10.1
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./container/mysql/var/lib/mysql:/var/lib/mysql
+      - ./container/sqlFiles:/home/sqlFiles
+    environment:
+      - MYSQL_DATABASE=uboat
+      - MYSQL_USER=uboat
+      - MYSQL_PASSWORD=uboat
+      - MYSQL_ROOT_PASSWORD=root
+    networks:
+      - vlan
+
+networks:
+  vlan:
+\end{lstlisting}
+
+\section{Rilevazioni con IDS}
+%lua scripting su richieste http per deoffuscare
+\subsection{Network based IDS}
+L'invio periodo delle richieste di Poll da parte del bot non rilevano niente  di sospetto se non che le richieste sono destinate a indirizzi IP e non a hostname, cosa abbastanza insolita in un contesto normale.
+
+Se l'indirizzo IP del server fosse noto come un indirizzo IP malevolo e fosse inserito all'interno di liste di IP considerati pericolosi, gli IDS  potrebbero rilevare il traffico di rete sfruttando queste liste. 
+
+\medskip
+
+La funzionalità di download and execute del server viene rilevata dagli IDS. In particolare è stato segnalato il download di un eseguibile con pochi headers, tipico di file stager, e che il download è avvenuto verso un indirizzo IP non specificandone l'hostname. Inoltre rileva anche la presenza della keyword 'isDebuggerPresent', tipicamente utilizzata all'interno di malware per applicare restrizioni di anti-debugging.
+In caso di download di file malevolo noto come un malware, Strelka si preoccuperebbe di segnalarne l'identificazione
+
+La funzionalità di update porta agli stessi risultati in quanto il funzionamento è quasi identico.
+
+\medskip
+
+Il controllo dello stato di un sito web non ha ovviamente rilevato nulla in quanto è basato su una semplice richiesta HTTP, ed essendo questo un protocollo comune in rete.
+
+\medskip
+L'esecuzione di un processo da remot, l'estrapolazione di screenshot e il keylogging non sono stati segnalati, in quanto il loro comportamento malevolo avviene principalmente  sull'host piuttosto che sulla rete.
+
+\medskip
+
+L'attacco DDoS non ha portato a segnalazioni.
+
+\medskip
+Lo scambio di comandi tra bot e server non è segnalato come malevolo in quanto non erano presenti regole di matching mirate alla rilevazione di UBoat, oltre al fatto che i comandi all'interno del corpo del messaggio sono offuscati.
+Un modo per poter rilevare la presenza di UBoat potrebbe essere sfruttare le capacità di LUA scripting di Suricata per deoffuscare il messaggio, in congiunta con l'inserimento di regole specifiche basate sul matching del formato dei messaggi di UBoat.
+
+\medskip
+In aggiunta alle funzionalità della Botnet è stata sfrutta la capacità di instaurare una reverse-shell sfruttando le capacità built-in, per analizzare se gli IDS l'avrebbero segnalata.
+In \Cref{fig:uboat-reverseshell1} si può osservare il comando composto\footnote{ formulato per testare anche la capacità di eseguire più comandi in un solo messaggio} utilizzato per creare una reverse shell sfruttando Nmap \cite{nmap}.Il server apre una porta e rimane in ascolto mentre il bot, attraverso Nmap,  esegue un comando e ne redirige l'input e l'output verso la porta aperta del server.
+
+A scopo di test, Nmap è stato installato sulla macchina vittima, in un contesto reale si potrebbe sfruttare la capacità di composizione dei comandi (osservabile in \Cref{fig:uboat-reverseshell1}) per eseguirne prima il download e poi l'esecuzione.
+
+In \Cref{fig:uboat-reverseshell2} si può osservare il successo effettivo dell'operazione di reverse-shell, che tuttavia, l'IDS non ha rilevato.
+
+\begin{figure}
+    \centering
+    \begin{subfigure}{0.4\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{res/fig/reverse-shell1.png}
+    \caption{Comando per la creazione di una reverse-shell}
+    \label{fig:uboat-reverseshell1}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.4\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{res/fig/reverse-shell2.png}
+    \caption{Shell collegata al bot}
+    \label{fig:uboat-reverseshell2}
+    \end{subfigure}
+    \caption{}
+    \label{fif:uboat-reverseshell}
+\end{figure}
+
+\subsection{Host based IDS}
+Combinando Sysmon con Wazuh è stato possibile sfruttare a pieno le funzionalità di HIDS che offre come Agent. Attraverso il set di regole di Wazuh, molto vasto e completo, è stato possibile identificare azioni potenzialmente malevole come la creazione di un record all'interno del registro di sistema o la creazione di file in zone delicate. Per sfruttare a pieno le capacità di rilevazione di Wazuh, e testare a pieno le capacità di rilevazione signature-based, sono state create delle regole Wazuh atte ad identificare UBoat.
+Queste regole sono basate sulle principali caratteristiche di UBoat descritte in precedenza, e su altri dettagli implementativi.
+\lstset{float,floatplacement=H,frame=none,tabsize=1,numbers=none}
+
+Attraverso l'aggiunta delle seguenti configurazioni a quelle dell'agent sulla macchina target è stato possibile monitorare le connessioni aperte e  directory specifiche. In caso di cambiamenti, come aggiunta o rimozione di file, all'interno di una delle directory monitorate, verrà generato un evento.
+\lstset{xleftmargin=1cm}
+\begin{lstlisting}
+<ossec_config>
+    <syscheck>
+        <disabled>no</disabled>
+        <directories realtime="yes">path a directory 
+            da monitorare</directories>
+        ...
+    </syscheck>
+    <localfile>
+        <log_format>full_command</log_format>
+        <command>netstat -n</command>
+        <alias>netstat command</alias>
+        <frequency>60</frequency>
+        ...
+    </localfile>
+    ...
+</ossec_config>
+\end{lstlisting}
+
+Di seguito analizzeremo le regole utilizzate per identificare le varie funzionalità operative della Botnet.
+Le regole 100013 e 100014 sono utilizzate per identificare connessioni verso l'indirizzo IP della Botnet, sfruttando la lista delle connessioni aperte inviate dall'agent. Le regole 100015 e 100016 sono state realizzate per cancellare il rumore creato dall'esecuzione del comando utilizzato per identificare le connessioni di rete sulla macchina monitorata.
+\begin{lstlisting}
+<group name="ossec">
+    <rule id="100013" level="0">
+        <if_group>ossec</if_group>
+        <match>netstat</match>
+        <description>netstat command execution</description>
+    </rule>
+    <rule id="100014" level="12">
+        <if_sid>100013</if_sid>
+        <match>100.100.100.151</match>
+        <description>Botnet - connection to botnet server</description>
+    </rule>
+    <rule id="100015" level="0">
+        <if_sid>92052</if_sid>
+        <field name="win.eventdata.parentImage">wazuh-agent.exe</field>
+        <description>agent check command execution</description>
+    </rule>
+    <rule id="100016" level="0">
+        <if_sid>92032</if_sid>
+        <field name="win.eventdata.parentImage">cmd.exe</field>
+        <field name="win.eventdata.image">NETSTAT.EXE</field>
+        <description>agent check command execution</description>
+    </rule>
+</group>
+\end{lstlisting}
+
+La regola 100007 sfrutta la capacità di monitorare directory designate precedentemente descritta, e genera un allarme nel caso nella particolare directory sia inserito un file eseguibile denominato 'filename.exe'. In questo caso si sfrutta l'hardcoding del nome del file per identificare la Botnet.
+\begin{lstlisting}
+<group name="syscheck">
+    <rule id="100007" level="12">
+        <if_sid>554</if_sid>
+        <regex>foldername\\\\filename.exe\.*added</regex>
+        <description>Botnet - malware file creation for persistance 
+            </description>
+    </rule>
+</group>
+\end{lstlisting}
+
+Di seguito verranno le analizzate le regole che sono state realizzate sfruttando le funzionalità di generazione eventi di Sysmon.
+Le regole 100002 e 100003 sono utilizzate per allertare che è stata inserita una determinata chiave di registro in una specifica posizione del registro di sistema. 
+
+\begin{lstlisting}
+<rule id="100002" level="0">
+    <if_group>sysmon</if_group>
+    <match>Registry value set</match>
+    <description>Registry value set</description>
+    <options>no_log</options>
+</rule>
+<rule id="100003" level="12">
+    <if_sid>100002</if_sid>
+    <field name="win.eventdata.targetObject">\\\\RunOnce\\
+        \\RegKey</field>
+    <field name="win.eventdata.details">\\\\AppData\\\\Roaming\\
+        \\FolderName\\\\FileName.exe</field>
+    <description>Botnet - reg key insertion</description>
+</rule>
+
+\end{lstlisting}
+
+La regola 100017 fa riferimento all'esecuzione del payload ormai persistenze all'interno del computer della vittima. Grazie al meccanismo precedentemente analizzato, sfrutta la chiave di registro 'RunOnce' per avviare l'esecuzione del bot all'accesso dell'utente, e questa regola si basa su questa azione.
+
+\begin{lstlisting}
+    
+<rule id="100017" level="12">
+    <if_group>sysmon</if_group>
+    <match>Process create</match>
+    <field name="win.eventdata.image">FileName.exe</field>
+    <description>Botnet - botnet execution</description>
+</rule>
+\end{lstlisting}
+
+La regola 100018 ha fine  analogo a quello della regola 100014, ovvero la rilevazione di una connessione col C\&C noto. Tuttavia mentre la prima fa affidamento sul risultato dell'esecuzione di un comando sull'agent, la seconda sfrutta gli eventi di Sysmon per generare un allarme.
+
+\begin{lstlisting}
+<rule id="100018" level="12">
+    <if_group>sysmon</if_group>
+    <match>Network connection detected</match>
+    <field name="win.eventdata.destinationIp">100.100.100.151</field>
+    <description>Botnet - connection to botnet server initiated
+        </description>
+</rule>
+\end{lstlisting}
+
+La regola 100019 sfrutta la rilevazione della regola 100018 in combinazione con la porta nota dell'handler degli upload per segnalare l'estrapolazione di screenshot.
+
+\begin{lstlisting}  
+<rule id="100019" level="12">
+    <if_sid>100018</if_sid>
+    <field name="win.eventdata.destinationPort">25019</field>
+    <description>Botnet - screenshot exfiltration</description>
+</rule>
+\end{lstlisting}
+
+Le regole 100020 e 100021 sono utilizzate in combinazione per rilevare uno spike del numero di connessioni in uscita dall'host monitorato e  segnalare quindi l'origine di un possibile attacco DoS.
+\begin{lstlisting}
+<rule id="100020" level="5">
+    <if_group>sysmon</if_group>
+    <field name="win.eventdata.sourceIp">100.100.100.197</field>
+    <field name="win.eventdata.destinationIp" negate="yes">
+        100.100.100.151</field>
+    <description>connection initiated from host</description>
+    <options>no_log</options>
+</rule>
+<rule id="100021" level="12" frequency="200" timeframe="10">
+    <if_matched_sid>100020</if_matched_sid>
+    <description>Possible DoS attack originated from host</description>
+</rule>
+\end{lstlisting}
+
+\medskip
+Le regole 100022 e 100023 mirano ad identificare il download e l'esecuzione attraverso l'explorer manager di file malevoli. Ancora una volta si sfrutta la conoscenza del sorgente del malware e il pattern matching con parole chiave.
+\begin{lstlisting}
+<rule id="100022" level="12">
+    <if_sid>92213</if_sid>
+    <field name="win.eventdata.targetFilename">BOTNET</field>
+    <description>Botnet - Downloaded executable</description>
+</rule>
+<rule id="100023" level="12">
+    <if_sid>61640</if_sid>
+    <field name="win.eventdata.image">explorer.exe</field>
+    <field name="win.eventdata.commandLine">BOTNET</field>
+    <description>Botnet - execution of downloaded file</description>
+</rule>
+\end{lstlisting}
+
+Concludiamo lo studio di UBoat con una carrellata delle segnalazioni effettuate da Wazuh in seguito all'aggiunta delle regole e configurazioni presentate.
+\begin{figure}[hbtp]
+    \centering
+    \includegraphics[width=\textwidth]{res/fig/uboat-result1.png}
+    \caption{Segnalazioni all'esecuzione del payload}
+\end{figure}[hbtp]
+\begin{figure}
+    \centering
+    \includegraphics[width=\textwidth]{res/fig/uboat-result2.png}
+    \caption{Segnalazioni in seguito alla funzionalità di Download and Execute}
+\end{figure}
+\begin{figure}[hbtp]
+    \centering
+    \includegraphics[width=\textwidth]{res/fig/uboat-result3.png}
+    \caption{Segnalazioni in seguito all'estrapolazione di screenshot}
+\end{figure}
+\begin{figure}[hbtp]
+    \centering
+    \includegraphics[width=\textwidth]{res/fig/uboat-result4.png}
+    \caption{Segnalazioni in seguito all'attacco DoS}
+\end{figure}
+\begin{figure}[hbtp]
+    \centering
+    \includegraphics[width=\textwidth]{res/fig/uboat-result5.png}
+    \caption{Segnalazioni in merito l'esecuzione all'accesso dell'utente}
+\end{figure}
