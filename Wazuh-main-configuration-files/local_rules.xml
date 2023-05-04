@@ -1,0 +1,103 @@
+<!-- Local rules -->
+
+<!-- Modify it at your will. -->
+<!-- Copyright (C) 2015, Wazuh Inc. -->
+
+<!-- Example -->
+<group name="local,syslog,sshd,">
+
+  <!--
+  Dec 10 01:02:02 host sshd[1234]: Failed none for root from 1.1.1.1 port 1066 ssh2
+  -->
+  <rule id="100001" level="5">
+    <if_sid>5716</if_sid>
+    <srcip>1.1.1.1</srcip>
+    <description>sshd: authentication failed from IP 1.1.1.1.</description>
+    <group>authentication_failed,pci_dss_10.2.4,pci_dss_10.2.5,</group>
+  </rule>
+</group>
+<group name="ossec">
+    <rule id="100013" level="0">
+        <if_group>ossec</if_group>
+        <match>netstat</match>
+        <description>netstat command execution</description>
+    </rule>
+    <rule id="100014" level="12">
+        <if_sid>100013</if_sid>
+        <match>100.100.100.151</match>
+        <description>Botnet - connection to botnet server</description>
+    </rule>
+</group>
+<group name="sysmon">
+    <rule id="100002" level="0">
+        <if_group>sysmon</if_group>
+        <match>Registry value set</match>
+        <description>Registry value set</description>
+        <options>no_log</options>
+    </rule>
+    <rule id="100003" level="12">
+        <if_sid>100002</if_sid>
+        <field name="win.eventdata.targetObject">\\\\RunOnce\\\\RegKey</field>
+        <field name="win.eventdata.details">\\\\AppData\\\\Roaming\\\\FolderName\\\\FileName.exe</field>
+        <description>Botnet - reg key insertion</description>
+    </rule>
+    <rule id="100015" level="0">
+        <if_sid>92052</if_sid>
+        <field name="win.eventdata.parentImage">wazuh-agent.exe</field>
+        <description>agent check command execution</description>
+    </rule>
+    <rule id="100016" level="0">
+        <if_sid>92032</if_sid>
+        <field name="win.eventdata.parentImage">cmd.exe</field>
+        <field name="win.eventdata.image">NETSTAT.EXE</field>
+        <description>agent check command execution</description>
+    </rule>
+    <rule id="100017" level="12">
+        <if_group>sysmon</if_group>
+        <match>Process create</match>
+        <field name="win.eventdata.image">FileName.exe</field>
+        <description>Botnet - botnet execution</description>
+    </rule>
+    <rule id="100018" level="12">
+        <if_group>sysmon</if_group>
+        <match>Network connection detected</match>
+        <field name="win.eventdata.destinationIp">100.100.100.151</field>
+        <description>Botnet - connection to botnet server initiated</description>
+    </rule>
+    <rule id="100019" level="12">
+        <if_sid>100018</if_sid>
+        <field name="win.eventdata.destinationPort">25019</field>
+        <description>Botnet - screenshot exfiltration</description>
+    </rule>
+    <rule id="100020" level="5">
+        <if_group>sysmon</if_group>
+        <field name="win.eventdata.sourceIp">100.100.100.197</field>
+        <field name="win.eventdata.destinationIp" negate="yes">100.100.100.151</field>
+
+        <description>connection initiated from host</description>
+        <options>no_log</options>
+    </rule>
+    <rule id="100021" level="12" frequency="200" timeframe="10">
+        <if_matched_sid>100020</if_matched_sid>
+        <description>Possible DoS attack originated from host</description>
+    </rule>
+    <rule id="100022" level="12">
+        <if_sid>92213</if_sid>
+        <field name="win.eventdata.targetFilename">BOTNET</field>
+        <description>Botnet - Downloaded executable</description>
+    </rule>
+    <rule id="100023" level="12">
+        <if_sid>61640</if_sid>
+        <field name="win.eventdata.image">explorer.exe</field>
+        <field name="win.eventdata.commandLine">BOTNET</field>
+        <description>Botnet - execution of downloaded file</description>
+    </rule>
+    
+</group>
+<group name="syscheck">
+    <rule id="100007" level="12">
+        <if_sid>554</if_sid>
+        <regex>foldername\\\\filename.exe\.*added</regex>
+        <description>Botnet - malware file creation for persistance </description>
+    </rule>
+</group>
