@@ -1443,18 +1443,19 @@ Anche nel caso l'attaccante riesca nell'intento di prendere controllo di un agen
 
 Wazuh \cite{wazuh} è una piattaforma open-source utilizzata per rilevamento, prevenzione e risposta di minacce. È in grado di proteggere i carichi di lavoro su ambienti on-premise, virtualizzati, containerizzati e basati su cloud.
 
-Il sistema è composta da un server di management e da uno o più agent installati sugli \textit{end-point} da monitorare. Il server colleziona e analizza i dati recuperati dagli agent.
+Il sistema è composto da un server di management e da uno o più agent installati sugli \textit{end-point} da monitorare. Il server colleziona e analizza i dati recuperati dagli agent.
 
 \subsection{Architettura e funzionamento}
 Wazuh è composto dei seguenti componenti:
 \begin{description}
-    \item [Indexer] Componente in cui sono memorizzati gli \textit{alert} generati;
+    \item [Indexer] Mantiene memorizzati e indicizzati gli \textit{alert} generatiò
     \item [Server] Analizza i dati ricevuti dagli agent. Un singolo server può analizzare dati provenienti da decine di migliaia di agenti e scalare orizzontalmente all'occorrenza attraverso \textit{clustering}.
-    \item [Dashboard] Interfaccia web utilizzata per visualizzare e analizzare dati.  Può essere utilizzata anche per configurare Wazuh.
-    \item [Agent] Sono installati sui server da monitorare, sono statici e inviano i log al server.
+    \item [Dashboard] Interfaccia web utilizzata per visualizzare e analizzare dati.  Può essere utilizzata anche per il management di configurazioni.
+    \item [Agent] Installati sui server da monitorare, sono statici ed eseguono operazioni o inviano dati  al server.
+    L'agente è composto da un demone e da più moduli operativi. Il processo demone si occupa della crittografia e dell'autenticazione necessarie per la comunicazione con il server, nonché dell'applicazione delle configurazioni remote e dell'esecuzione dei moduli. I moduli operativi svolgono le attività assegnate all'agente per il monitoraggio e la protezione della macchina su cui è installato.
 \end{description}
 
-L'agent invia continuamente eventi al server per analisi e rilevazione di minacce. Per inoltrare i dati, l'agent stabilisce una connessione col servizio che gestisce le connessioni del server, che è in ascolto sulla porta 1514 di default.  Il server alla ricezione degli eventi ne esegue il \textit{decoding}. Con decoding si intende estrarre informazioni da un evento ricevuto che verranno utilizzate per l'analisi. In seguito compara le informazioni così estratte dagli eventi con le regole interne. Le regole interne vengono utilizzate per generare alert in caso di match.
+L'agent invia continuamente eventi al server per l'analisi e la rilevazione di minacce. Per inoltrare i dati, l'agent stabilisce una connessione col servizio che gestisce le connessioni del server, che è in ascolto sulla porta 1514 di default.  Il server, alla ricezione degli eventi, ne esegue il \textit{decoding}. Con decoding si intende estrarre informazioni in formato  chiave-valore atraverso l'uso di \textit{decoder}. In seguito compara le informazioni così estratte dagli eventi con le regole interne. Le regole interne vengono utilizzate per generare alert in caso di match.
 Sia gli eventi che gli alert vengono memorizzati all'interno del server.
 
 La comunicazione tra agent e server è criptata attraverso AES.
@@ -1464,6 +1465,50 @@ I dati vengono quindi indicizzati e la dashboard può essere utilizzata per repe
 
 Wazuh è anche fornito di un API RESTful utilizzabile per visualizzare e modificare configurazioni e status di server e agent.
 
+Alcune delle capacità principali di Wazuh sono:
+\begin{description}
+    \item [Intrusion detection]  Gli agent effettuano una scansione dei sistemi monitorati alla ricerca di malware, rootkit e anomalie sospette, possono  individuare file nascosti, processi nascosti e ascoltatori di rete non legittimi, così come incongruenze nelle risposte alle chiamate di sistema. Oltre alle capacità degli agenti, il componente server utilizza un metodo di rilevamento delle intrusioni signature-based per identificare fattori di compromissione all'interno dei log analizzati.
+    \item [Analisi dei log] Gli agent sono in grado di leggere i log di applicazioni e del sistema monitorato, per poi inoltrarli in modo sicuro verso il server incaticato di analizzarli attraverso meccanismi basati su regole. Il server può ricevere log anche da dispositivi che non sono in grado di ospitare un agente, attraverso l'inoltro via Syslog. Attraverso le regole è possibile acquisire consapevolezza di errori di sistema, misconfigurazioni, attività malevole, violazioni di policy e altre problematiche a livello di sicurezza e operatività.
+    \item [File integrity monitoring] Wazuh è in grado di monitorare il file system, individuando modifiche nel contenuto, nelle autorizzazioni, nella proprietà e negli attributi dei file che richiedono un'attenzione particolare. Inoltre, è in grado di identificare automaticamente gli utenti e le applicazioni che creano o modificano i file. Questa funzionalità può essere combinata con l'analisi delle minacce per identificare eventuali attacchi o host compromessi.
+    \item [Vulnerability detection] Gli agenti possono estrapolare l'inventario dei software installati sulla macchina monitorata ed inviarlo  al server, dove viene incrociato con i database di  Common Vulnerabilities and Exposure\footnote{identificatore per una particolare vulnerabilità o falla di sicurezza} (CVE) costantemente aggiornati per identificare il software noto come vulnerabile.
+    \item [Configuration assessment] Wazuh è in grado di monitorare configurazioni di sistema o di applicazioni per assicurarsi che siano in linea con le linee guida e policy definite.
+    \item [Incident response] Permette di configurare risposte attive in caso determinati criteri sono rilevati, come bloccare l'accesso di una sorgente considerata malevola. Inoltre permette di eseguire comandi e query di sistema per eseguire attività forense o rispondere a minacce.
+    \item [Cloud security] Wazuh aiuta a monitorare le infrastrutture cloud a livello di API, utilizzando moduli di integrazione in grado di estrarre dati di sicurezza dai provider cloud più noti.
+    \item [Containers security] Wazuh offre visibilità sulla sicurezza dei container Docker, monitorando il loro comportamento e rilevando minacce, vulnerabilità ed anomalie. L'agente  ha una integrazione nativa con l'engine Docker, consentendo di monitorare immagini, volumi, impostazioni di rete e container in esecuzione.
+\end{description}
+
+Le precedenti funzionalità sono configurabili attraverso file di configurazione XML globali, mantenuti in server centrale, e locali, conservati all'interno degli agenti. Le configurazioni degli agenti possono essere centralizzate e distribuite dal server. La generazione degli allarmi possono essere personalizzate aggiungendo regole e decoder al set predefinito.
+
+%aggiungere regola e decoder di esempio?
+
+\subsection{Deploy e configurazione}
+ L'obiettivo era l'installazione di un agent all'interno di una delle due macchine adibite ad essere infettata al fine di poter studiare le tecnologie  HIDS. Dato che la prossima Botnet oggetto di studio esegue solo su Windows, l'agent verrà installato sulla macchina con OS.
+ 
+Sia Security Onion che Ossim, offrono la possibilità di ricevere log inviati da agenti Wazuh  e mettono a disposizione dell'utente la possibilità di scaricare l'agent dal web server.
+
+Inizialmente è stato eseguito il deploy dell'agent Wazuh sfruttando  Security Onion come server. Per fare ciò, in seguito all'aggiunta di regole firewall e alla registrazione dell'host  come agent, è stato scaricato il pacchetto di installazione dalla web gui di Security Onion. In seguito all'installazione dell'agent è stato notato che la versione del software non era aggiornata. Per evitare complicazioni in fase di testing e per poter sfruttare a pieno le capacità della versione più aggiornata è stato deciso di procede con l'installazione dell'agent fornito da Ossim. 
+\medskip
+Ossim offre la possibilità di installare automaticamente l'agent all'interno di asset con sistema operativo Windows. Tuttavia tale approccio non è andato a buon fine e quindi si è proseguito con l'installazione manuale. Una volta registrato l'asset come possessore di agent, tramite l'interfaccia web, è stato possibile eseguire il deploy dell'agent  attraverso un semplice comando da terminale, fornito al momento della registrazione. Il comando in questione era incaricato  di scaricare, installare e configurare l'agent  in modo che potesse comunicare col server.
+
+Seppure la versione di Ossim fosse più aggiornata di quella di Security Onion, non era comunque l'ultima versione disponibile del software. Inoltre, entrambi gli IDS offrivano possibilità di visualizzazione e debug limitate in confronto al server Wazuh originale.
+Per i motivi elencati quindi, è stato deciso di proseguire con il deploy di un'ulteriore macchina che ospitasse il server Wazuh e che offrisse le versioni di agenti più aggiornate.
+
+\medskip
+
+Come già osservato nella sezione inerente l'architettura di Wazuh, esso é composto di più componenti: Indexer, Server, Dashboard.  Dato che il deploy di Wazuh servirà solo a scopi educativi si è optato per un'architettura stand-alone, in cui tutte le componenti coesistono in stessa macchina. Per facilitare l'installazione della piattaforma HIDS, è stato utilizzato ancora una volta Docker per la containerizzazione dei servizi. In particolare è stato sfruttato il file di configurazione Docker Compose offerto da Wazuh per l'esecuzione congiunta e coordinata dei servizi necessari.
+
+Una volta che il server è diventato operativo, si è proseguito con l'installazione dell'agent, sfruttando il relativo pacchetto d'installazione scaricabile dalla pagina web ufficiale di Wazuh.
+\medskip
+
+In seguito all'installazione dell'agente, è stato installato Sysmon cui log verranno inviati attraverso l'agent verso il server per permettere analisi più approfondite. Sysmon \cite{sysmon} (System Monitor) è un tool appartenente alla suite Sysinternals creata da Microsoft. Esso permette di monitorare e notificare al Windows Event Log System\footnote{sistema di memorizzazione e visualizzazione di log all'interno del sistema operativo Windows} attività di sistema come la creazione di processi, instaurazione di connessioni di rete, modifiche a file e molto altro. Questo è stato inizializzato con un file di configurazione \cite{sysmonconfig} che permettesse una buona base di tracciatura di eventi, in particolare legati al fattore sicurezza del sistema.
+L'agente  Wazuh è stato istruito di collezionare i log di Sysmon che venivano inseriti all'interno del registro eventi di Windows ed in seguito di inviarli al server per poter permettere un analisi più approfondita del sistema.
+Nella sezione di codice \ref{sysmonconfig1}, è possibile osservare l'aggiunta al file di configurazione Wazuh che permette all'agent di tenere traccia delle attività di Sysmon.
+\begin{lstlisting}[floatplacement=H,caption={Aggiunta al file di configurazione dell'agent},captionpos=b,label={sysmonconfig1}]{}
+    <localfile>
+        <location>Microsoft_Windows_Sysmon/Operational</location>
+        <lof_format>eventchannel</lof_format>
+    </localfile>
+\end{lstlisting}
 
 
 
@@ -1878,13 +1923,15 @@ Le regole 100022 e 100023 mirano ad identificare il download e l'esecuzione attr
 </rule>
 \end{lstlisting}
 
+\medskip
+
 Concludiamo lo studio di UBoat con una carrellata delle segnalazioni effettuate da Wazuh in seguito all'aggiunta delle regole e configurazioni presentate.
 \begin{figure}[hbtp]
     \centering
     \includegraphics[width=\textwidth]{res/fig/uboat-result1.png}
     \caption{Segnalazioni all'esecuzione del payload}
-\end{figure}[hbtp]
-\begin{figure}
+\end{figure}
+\begin{figure}[hbtp]
     \centering
     \includegraphics[width=\textwidth]{res/fig/uboat-result2.png}
     \caption{Segnalazioni in seguito alla funzionalità di Download and Execute}
@@ -1904,3 +1951,4 @@ Concludiamo lo studio di UBoat con una carrellata delle segnalazioni effettuate 
     \includegraphics[width=\textwidth]{res/fig/uboat-result5.png}
     \caption{Segnalazioni in merito l'esecuzione all'accesso dell'utente}
 \end{figure}
+
