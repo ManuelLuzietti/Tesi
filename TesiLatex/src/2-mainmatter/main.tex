@@ -2,56 +2,56 @@
 
 \chapter{Studio delle Botnet}
 
-Una Botnet è una rete che consiste di  \textit{host} compromessi chiamati bot che eseguono istruzioni impartite da un altro host detto \emph{master} o \emph{botmaster}, responsabile di coordinare i bot. Il botmaster non comunica direttamente con i bot, infatti esso usa almeno un server C\&C che funge da \emph{Proxy} tra di esso e le vittime. Questo garantisce un livello di anonimato aggiuntivo per il master oltre alla possibilità di scalare orizzontalmente le capacità del sistema. Avendo infatti più C\&C server permette di avere più capacità di calcolo per gestire numeri elevati di bot oltre a garantire la disponibilità del servizio in caso di \emph{take down} di uno dei C\&C server. Moderne topologie di Botnet possono usare i bot che sono già parte della rete come C\&C Server, rimediando quindi al problema del singolo \textit{point of failure} di una topologia centralizzata.
+Una botnet è una rete che consiste di  \textit{host} compromessi chiamati bot che eseguono istruzioni impartite da un altro host detto \textit{master} o \textit{botmaster}, responsabile di coordinare i bot. Il botmaster non comunica direttamente con i bot, infatti esso usa almeno un server C\&C che funge da \textit{Proxy} tra di esso e le vittime. Questo garantisce un livello di anonimato aggiuntivo per il master oltre alla possibilità di scalare orizzontalmente le capacità del sistema. Avendo infatti più C\&C server permette di avere più capacità di calcolo per gestire numeri elevati di bot oltre a garantire la disponibilità del servizio in caso di \textit{take down} di uno dei C\&C server. Moderne topologie di Botnet possono usare i bot che sono già parte della rete come C\&C server, rimediando quindi al problema del singolo \textit{point of failure} di una topologia centralizzata.
 A volte le funzionalità di un bot e quelle di un C\&C server possono risiedere in stesso host.
 
 \begin{figure}[htb]
     \centering
     \includegraphics[width=8cm]{Botnet_1.jpg}
-    \caption{esempio di architettura di una Botnet \cite{BotnetExampleImage}}
+    \caption{esempio di architettura di una Botnet \cite{BotnetExampleImage}.}
     \label{fig:botnetexample}
 \end{figure}
-Le Botnet possono essere di tipo \emph{push based} o \emph{pull based}. Nel primo caso è il server che invia i comandi al bot mentre nel secondo caso è il bot infetto che è incaricato di richiedere i comandi al server periodicamente.
- La modalità operazionale  dipende più che altro dal protocollo in uso\footnote{eg. HTTP costruito su modello richiesta-risposta quindi una Botnet basata su questo protocollo sarà di tipo pull based}.
+Le Botnet possono essere di tipo \textit{push based} o \textit{pull based}. Nel primo caso è il server che invia i comandi al bot mentre nel secondo caso è il bot infetto che è incaricato di richiedere i comandi al server periodicamente.
+ La modalità operazionale  dipende più che altro dal protocollo in uso\footnote{eg. HTTP costruito su modello richiesta-risposta quindi una Botnet basata su questo protocollo sarà di tipo pull based.}.
  Di seguito verranno presentati i principali schemi comunicazioni, topologie, protocolli e tecniche di occultamento delle Botnet \cite{vormayr2017botnet,vuong2011advanced}.
 
 
 \section{Schema Comunicazionale}
-Parte importante della comunicazione della Botnet è il \emph{coordinamento}. I task che non sono automatizzati vengono eseguito solo dopo aver ricevuto l'apposito comando dal C\&C, il che implica una serie di messaggi da e verso il server. I task automatizzati non richiedono il coordinamento con il server di controllo e quindi non generano traffico di rete. Di conseguenza più sono i task automatizzati, meno sarà il traffico di rete necessario per la coordinazione del bot e più sarà difficile da identificare la Botnet attraverso l'analisi del traffico di rete. Ovviamente limitare il coordinamento è a discapito della flessibilità, quindi solo una parte dei task viene automatizzata (ovviamente ci sono eccezioni anche a questo). 
+Parte importante della comunicazione della Botnet è il \textit{coordinamento}. I task che non sono automatizzati vengono eseguiti solo dopo aver ricevuto l'apposito comando dal C\&C, il che implica una serie di messaggi da e verso il server. I task automatizzati non richiedono il coordinamento con il server di controllo e quindi non generano traffico di rete. Di conseguenza più sono i task automatizzati, meno sarà il traffico di rete necessario per la coordinazione del bot e più sarà difficile da identificare la Botnet attraverso l'analisi del traffico di rete. Ovviamente limitare il coordinamento è a discapito della flessibilità, quindi solo una parte dei task viene automatizzata (ovviamente ci sono eccezioni anche a questo). 
 
-Lo schema di comunicazione della Botnet può essere separato in più parti: \emph{propagazione} e \emph{operazione}. Questi passi, dal punto di vista dell'host compromesso, possono avvenire solo sequenzialmente dato che l'infezione deve avvenire prima che il bot possa divenire operazionale. 
+Lo schema di comunicazione della Botnet può essere separato in più parti: \textit{propagazione} e \textit{operazione}. Questi passi, dal punto di vista dell'host compromesso, possono avvenire solo sequenzialmente dato che l'infezione deve avvenire prima che il bot possa divenire operazionale. 
 \subsection{Propagazione}
-La parte di \emph{propagazione} è la fase in cui si cerca di reclutare nuovi bot. È la prima fase in nel ciclo di vita di un bot, ed è una fase importante dato che la potenza di una Botnet aumenta con la sua grandezza \footnote{eg. Botnet capace di attacchi DDoS è più efficiente se ha più bot attraverso il quale generare traffico di rete}. Un'eccezione a questo sono gli APT (Advanced Persistent Threat) che sono attacchi mirati solitamente, e quindi necessitano solo di un limitato numero di macchine, oltre al fatto che devono rimanere nascoste nel sistema il più a lungo possibile, evitando dunque di propagarsi per non rischiare di essere rilevate.
+La parte di \textit{propagazione} è la fase in cui si cerca di reclutare nuovi bot. È la prima fase in nel ciclo di vita di un bot, ed è una fase importante dato che la potenza di una Botnet aumenta con la sua grandezza\footnote{eg. Botnet capace di attacchi DDoS è più efficiente se ha più bot attraverso il quale generare traffico di rete.}. Un'eccezione a questo sono gli APT (Advanced Persistent Threat) che sono attacchi mirati solitamente, e quindi necessitano solo di un limitato numero di macchine, oltre al fatto che devono rimanere nascoste nel sistema il più a lungo possibile, evitando dunque di propagarsi per non rischiare di essere rilevate.
 
 La propagazione può avvenire attivamente o passivamente.
 Entrambi i metodi di propagazione implicano che l'host vittima venga infettato con l'eseguibile di riferimento della  Botnet. 
 \subsubsection{Attiva}
 \label{PropagazioneAttiva}
-Nella propagazione attiva, il bot cerca e sfrutta vulnerabilità in altre macchine per espandersi. Questo può avvenire su comando del C\&C o in automatico. A seconda dell'\textit{exploit}\footnote{codice usato per sfruttare una vulnerabilità} selezionato, una prima fase di scansione della rete può essere necessaria.
+Nella propagazione attiva, il bot cerca e sfrutta vulnerabilità in altre macchine per espandersi. Questo può avvenire su comando del C\&C o in automatico. A seconda dell'\textit{exploit}\footnote{codice usato per sfruttare una vulnerabilità.} selezionato, una prima fase di scansione della rete può essere necessaria.
 
 
 Una volta che la macchina è infetta, se il task non è automatizzato sarà necessario una messaggio di coordinazione dal C\&C server, in cui si specificano parametri per l'exploit e la possibile scansione di rete, oltre ad avviare l'infezione. Alcune Botnet mantengono questi parametri di configurazione in binario o in file separato, non necessitando dunque di un passo di coordinazione. 
 
-La scansione di rete è opzionale, e può essere di diversi tipi a seconda delle informazioni che si vuole ottenere e del livello di occultamento che si vuole mantenere. Ad esempio potrebbero essere usate scansioni UDP\footnote{User Datagram Protocol}/TCP\footnote{Transmission Control Protocol} per cercare servizi esposti e vulnerabili, o semplicemente richieste ICMP\footnote{Internet Control Message Procotol} per limitarsi a identificare quali porte sono attive sull'host target.
+La scansione di rete è opzionale, e può essere di diversi tipi a seconda delle informazioni che si vuole ottenere e del livello di occultamento che si vuole mantenere. Ad esempio potrebbero essere usate scansioni UDP\footnote{User Datagram Protocol.}/TCP\footnote{Transmission Control Protocol.} per cercare servizi esposti e vulnerabili, o semplicemente richieste ICMP\footnote{Internet Control Message Protocol.} per limitarsi a identificare quali porte sono attive sull'host target.
 
 
-Lo step principale è l'infezione, in cui si cerca di abusare i  servizi vulnerabili della macchina vittima. Questa fase dipende molto dal tipo di attacco scelto\footnote{eg. eseguire una richiesta contenente un payload maligno o eseguire attacco \textit{bruteforce}\footnotemark su un servizio (eg. \textit{ssh})}
-\footnotetext{attacco in cui si cerca di indovinare una combinazione in modo esaustivo, testando tutte le combinazioni possibili}.
-Dato che durante questa fase la dimensione di dati scambiali è relativamente limitata, una fase ulteriore di \emph{download} può essere necessario.
+Lo step principale è l'infezione, in cui si cerca di abusare i  servizi vulnerabili della macchina vittima. Questa fase dipende molto dal tipo di attacco scelto\footnote{eg. eseguire una richiesta contenente un payload maligno o eseguire attacco \textit{bruteforce}\footnotemark su un servizio (eg. \textit{ssh}).}
+\footnotetext{attacco in cui si cerca di indovinare una combinazione in modo esaustivo, testando tutte le combinazioni possibili.}.
+Dato che durante questa fase la dimensione di dati scambiabili è relativamente limitata, una fase ulteriore di \textit{download} può essere necessario.
 
 
-\label{Download}Il download può avvenire in più parti, tipica delle \emph{multi stage infection}. In primo luogo la vittima esegue solo un piccolo eseguibile\footnote{un eseguibile di piccole dimensioni è solitamente meno sospetto} detto \emph{dropper} che si occupa di rimediare l'eseguibile vero e proprio dalla Botnet o da un'altra sorgente. Il binario può anche essere ricevuto criptato, rendendo ulteriormente difficile per i ricercatori riuscire a ottenere l'eseguibile per scopi di \emph{reverse engineering}\footnote{tecnica di analisi di un binario attraverso appositi strumenti, necessario per capire il flusso di esecuzione di un programma e relative funzionalità senza eseguirlo}. Quindi l'eseguibile viene opzionalmente decriptato ed eseguito.
+\label{Download}Il download può avvenire in più parti, tipica delle \textit{multi stage infection}. In primo luogo la vittima esegue solo un piccolo eseguibile\footnote{un eseguibile di piccole dimensioni è solitamente meno sospetto.} detto \textit{dropper} che si occupa di rimediare l'eseguibile vero e proprio dalla Botnet o da un'altra sorgente. Il binario può anche essere ricevuto criptato, rendendo ulteriormente difficile per i ricercatori riuscire a ottenere l'eseguibile per scopi di \textit{reverse engineering}\footnote{tecnica di analisi di un binario attraverso appositi strumenti, necessario per capire il flusso di esecuzione di un programma e relative funzionalità senza eseguirlo.}. Quindi l'eseguibile viene opzionalmente decriptato ed eseguito.
 
-La fase finale di questo processo di propagazione attiva è lo step di \emph{registrazione}.
-Questo step è opzionale, ma fondamentale se si vuole tener traccia delle dimensioni della Botnet, in caso di Botnet \emph{push based}\footnote{il server deve conoscere la posizione del bot per poter comunicare con esso} o per particolari tipologie di Botnet\footnote{eg. Botnet P2P}.
+La fase finale di questo processo di propagazione attiva è lo step di \textit{registrazione}.
+Questo step è opzionale, ma fondamentale se si vuole tener traccia delle dimensioni della Botnet, in caso di Botnet \textit{push based}\footnote{il server deve conoscere la posizione del bot per poter comunicare con esso.} o per particolari tipologie di Botnet\footnote{eg. Botnet P2P.}.
 
 \subsubsection{Passiva}
 Con propagazione passiva si intende la distribuzione del malware di riferimento attraverso altri vettori non in controllo della Botnet. Questo include propagazione attraverso email, siti web o dispositivi di archiviazione esterna. Comune a questi meccanismi di infezione è il fatto che la vittima infetta la propria macchina eseguendo il malware, attraverso un click o un azione particolare. 
-La distribuzione via email può avvenire attraverso email di \emph{phishing}. Queste sono email che sembrano legittime, ma che in realtà hanno l'obiettivo di ingannare la vittima ad aprire un file allegato o visitare un particolare sito web maligno. Analoghi a email di phishing sono i siti web di phishing. Pagine web uguali alla loro copia legittima ma appartenenti a domini diversi (tecnica anche detta \emph{domain typosquatting}).
+La distribuzione via email può avvenire attraverso email di \textit{phishing}. Queste sono email che sembrano legittime, ma che in realtà hanno l'obiettivo di ingannare la vittima ad aprire un file allegato o visitare un particolare sito web maligno. Analoghi a email di phishing sono i siti web di phishing. Pagine web uguali alla loro copia legittima ma appartenenti a domini diversi (tecnica anche detta \textit{domain typosquatting}).
 
-Si possono anche usare vulnerabilità in browser, plugin della vittima o compromettere un sito web che esso visita frequentemente, per causare un \emph{drive by download}\footnote{tecnica di attacco che si riferisce al download non intenzionale di software maligno da sito compromesso}.
+Si possono anche usare vulnerabilità in browser, plugin della vittima o compromettere un sito web che esso visita frequentemente, per causare un \textit{drive by download}\footnote{tecnica di attacco che si riferisce al download non intenzionale di software maligno da sito compromesso.}.
 
-Si noti che in un contesto del genere, solo la ricezione di un email o la visita a un sito web può essere individuata a livello di rete. Inoltre la comunicazione in questo caso usa gli stessi protocolli e modalità del traffico di rete legittimo. Per questo motivo solo attraverso Deep Packet Inspection \footnote{analisi dei pacchetti di rete che va oltre alla mera intestazione} (DPI) sarebbe possibile individuare contenuto eseguibile e questo è possibile solo se il tutto non è criptato.
+Si noti che in un contesto del genere, solo la ricezione di un email o la visita a un sito web può essere individuata a livello di rete. Inoltre la comunicazione in questo caso usa gli stessi protocolli e modalità del traffico di rete legittimo. Per questo motivo solo attraverso Deep Packet Inspection\footnote{analisi dei pacchetti di rete che va oltre alla mera intestazione.} (DPI) sarebbe possibile individuare contenuto eseguibile e questo è possibile solo se il tutto non è criptato.
 
 Dispositivi di archiviazione esterna possono essere infettati per far sì che il malware si muova tra dispositivi. All'inserimento del media di archiviazione all'interno di un altro \textit{device}, questo avrebbe una copia dell'eseguibile potenzialmente eseguibile, senza alcun traffico di rete o movimenti sospetti.
 
@@ -59,7 +59,7 @@ Una volta che il malware viene eseguito sulla macchina vittima, seguono le fasi 
 
 
 \subsection{Operazione}
- La seconda fase è quella \emph{operazionale} in cui si eseguono i veri e propri \emph{task}, a seconda di quali siano gli obiettivi della Botnet. I task possono essere categorizzati in accordo al loro obiettivo come: 
+ La seconda fase è quella \textit{operazionale} in cui si eseguono i veri e propri \textit{task}, a seconda di quali siano gli obiettivi della Botnet. I task possono essere categorizzati in accordo al loro obiettivo come: 
 \begin{itemize}
     \centering
     \item Download  dati;
@@ -88,14 +88,14 @@ Questo task inizia con uno step di coordinazione, in cui il C\&C server invia co
 Successivamente i dati richiesti sono prelevati dal bot o la computazione richiesta è eseguita. 
 Per concludere i dati sono inviati al server.
 \subsubsection{Forward Proxy}
-Un \emph{forward proxy} è un server capace di connettersi a un  host specifico come tramite per un altro host.
+Un \textit{forward proxy} è un server capace di connettersi a un  host specifico come tramite per un altro host.
 Questo permette di mantenere l'anonimato dell'host che inizia la richiesta, di fare tunneling  delle connessioni o di effettuare connessioni verso host che altrimenti non sarebbero raggiungibili.
 
 Le Botnet possono implementare proxy unidirezionali o bidirezionali. 
-Proxy bidirezionali sono necessari se si vuole il risultato di una richiesta. Alcune Botnet includono SOCKS proxy \footnote{proxy server in grado di eseguire forward di connessioni TCP e UDP (da versione 5 in poi) indipendentemente dal protocollo applicativo veicolato}  come servizio, permettendo di utilizzare la Botnet come servizio di anonimato, sfruttando  i bot come proxy server generici.
+Proxy bidirezionali sono necessari se si vuole il risultato di una richiesta. Alcune Botnet includono SOCKS proxy\footnote{proxy server in grado di eseguire forward di connessioni TCP e UDP (da versione 5 in poi) indipendentemente dal protocollo applicativo veicolato.}  come servizio, permettendo di utilizzare la Botnet come servizio di anonimato, sfruttando  i bot come proxy server generici.
 Altro  uso di proxy bidirezionale è la possibilità di valicare Firewall o NAT infettandoli e usandoli come proxy, fungendo da \textit{bridge} verso i device interni alla rete che altrimenti non sarebbero raggiungibili.
 
-Per creare meno traffico sospetto possibile, la Botnet può anche usare i proxy per fare \emph{protocol encapsulation}, ovvero nascondere un protocollo all'interno di un altro. In questo modo i sistemi di rilevazione devono fare lo sforzo aggiuntivo di essere in grado di interpretare tutti i protocolli possibili se voglio ricostruire la comunicazione originale.
+Per creare meno traffico sospetto possibile, la Botnet può anche usare i proxy per fare \textit{protocol encapsulation}, ovvero nascondere un protocollo all'interno di un altro. In questo modo i sistemi di rilevazione devono fare lo sforzo aggiuntivo di essere in grado di interpretare tutti i protocolli possibili se voglio ricostruire la comunicazione originale.
 
 Proxy unidirezionali possono essere usati per effettuare attacchi DDoS. Infatti il botmaster non ha bisogno di controllare ogni messaggio e non è interessato alla risposta di questi. Gli basta comunicare destinazione e il tipo di comunicazione da utilizzare.
 
@@ -104,11 +104,11 @@ Un altro modo di usare i proxy unidirezionali è quello di usarli per distribuir
 A livello di schema comunicazionale, sia quello unidirezionale che bidirezionale iniziano con uno step di coordinazione.
 Nel caso bidirezionale viene settata la configurazione del proxy con le porte su cui fare \textit{forwarding} e i protocolli da usare. Dato che queste configurazioni possono essere già incluse in binario questo step è opzionale.
 
-Per il proxy unidirezionale invece, che è usato esclusivamente per eseguire task automatizzati, questo passo non è opzionale. Ad esempio se si vuole eseguire un attacco DDoS deve essere impostato il tipo di attacco, il target e la durata. Teoricamente queste informazioni possono essere incluse nel binario ma questo renderebbe inflessibile questo tipo di attacco che di per sé ha bisogno di essere improvviso e di durata variabile.
+Per il proxy unidirezionale invece, che è usato esclusivamente per eseguire task automatizzati, questo passo non è opzionale. Ad esempio se si vuole eseguire un attacco DDoS deve essere impostato il tipo di attacco, il target e la durata. In teoria, potrebbe essere possibile inserire tali informazioni nel codice binario, ma ciò potrebbe rendere questo tipo di attacco troppo rigido, mentre esso per natura richiede di essere improvviso e di durata variabile.
 
 L'ultimo step è lo scambio di dati. In caso il proxy sia bidirezionale, la comunicazione sarà composta di richieste e risposte dove il bot farà da tramite.  Nel caso di proxy unidirezionale i dati sono inviati solamente da bot verso il target. 
 \subsubsection{Reverse Proxy}
-Le Botnet possono essere usate per creare un \emph{fast-flux network} (\Cref{fast-flux-network-label}). Un \emph{fast-flux network} consiste di più \emph{reverse proxy server}\footnote{mentre un forward proxy server funge da intermediario per un client, il reverse proxy server agisce come intermediario per il server, ponendosi tra il client e il server} che sono usati per connettersi al C\&C server.Dato che le connessioni sono verso i proxy, l'identità del C\&C server rimanere nascosta, rendendo il server più resistente a possibili \textit{take down}.
+Le Botnet possono essere usate per creare un \textit{fast-flux network} (\Cref{fast-flux-network-label}). Un \textit{fast-flux network} consiste di più \textit{reverse proxy server}\footnote{mentre un forward proxy server funge da intermediario per un client, il reverse proxy server agisce come intermediario per il server, ponendosi tra il client e il server.} che sono usati per connettersi al C\&C server.Dato che le connessioni sono verso i proxy, l'identità del C\&C server rimanere nascosta, rendendo il server più resistente a possibili \textit{take down}.
 
 La comunicazione di rete necessaria per questo task inizia con uno step di coordinazione in cui il bot è istruito di quali porte aprire e verso quali indirizzi interni connettersi. Dopo questa fase di coordinazione altri host o bot possono connettersi al reverse proxy per comunicare indirettamente col C\&C server. Le informazioni di coordinazione non sono preinseribili nel binario del malware per via della natura della Botnet. I bot che fungono da reverse proxy potrebbero infatti  non essere mai raggiungibili  in uno scenario in cui gli indirizzi di questi dovessero essere prefissati\footnote{I bot potrebbero non essere online, il malware può essere neutralizzato o possono esserci problemi di rete.}.
 
@@ -119,7 +119,7 @@ Una delle feature presenti nelle Botnet è la capacità di eseguire task a nome 
     \item Cancellazione di  file;
     \item Modifiche al  traffico di rete dell'host;
     \item \textit{Disruption} di  servizi;
-    \item Creazione di  \textit{backdoor}\footnote{rendere la macchina accessibile dall'attaccante attraverso la  rete};
+    \item Creazione di  \textit{backdoor}\footnote{rendere la macchina accessibile dall'attaccante attraverso la  rete.};
     \item Distruzione o criptazione di dati in dispositivi di archiviazione;
     \item Esecuzione di eseguibili.
 \end{itemize}
@@ -134,13 +134,13 @@ La comunicazione tra C\&C server e i bot può essere organizzata da un punto di 
 \end{itemize}
 
 \subsection{Centralizzata}
-Nella topologia Centralizzata ogni bot si connette direttamente a un unico server.
+Nella topologia centralizzata ogni bot si connette direttamente a un unico server.
 Per una topologia del genere spesso sono usati protocolli di comunicazione semplici come Internet Relay Chat (IRC) (\Cref{IRC}) o HyperText Markup Language (HTTP). Per questo motivo ne risulta anche semplificato il \textit{set-up}, dato che questi protocolli non hanno particolari esigenze da soddisfare. 
 Una topologia del genere gode anche di bassa latenza, dato che bot e server si scambiano messaggi direttamente, e di alta scalabilità per via della semplicità della rete. 
 
 Tuttavia questa semplicità di rete è a discapito della robustezza. Infatti una struttura centralizzata ha un singolo \textit{point of failure} e il \textit{take down} del server principale di comando e controllo comporterebbe la rottura dell'intera rete Botnet. 
 Il singolo \textit{point of failure} può essere mitigato in parte utilizzando più C\&C server.
-Un'altra tecnica utilizzata per mitigare il problema della robustezza è il \emph{fast-flux} che verrà descritto nella \Cref{fast-flux-network-label}.
+Un'altra tecnica utilizzata per mitigare il problema della robustezza è il \textit{fast-flux} che verrà descritto nella \Cref{fast-flux-network-label}.
 
 Altro punto a sfavore di questa topologia è il fatto che gli indirizzi dei C\&C server devono essere inseriti all'interno del binario del bot. Questo è un rischio per il botmaster che potrebbe perdere il controllo del C\&C server in caso questi indirizzi dovessero essere scovati da un'analista di sicurezza informatica.
 Una possibile soluzione potrebbe essere criptare od offuscare il codice del bot. Tuttavia anche questa soluzione risulterebbe temporanea in quanto non garantirebbe la sicurezza che questi indirizzi non vengano trovati a seguito di un analisi approfondita da parte di uno specialista.
@@ -152,11 +152,11 @@ In un Fast-flux network il servizio Domain Name System (DNS) di risoluzione degl
 Quando una macchina infetta ha necessità di comunicare con il server di controllo, risolve l'hostname associato ottenendo l'indirizzo IP di un bot che farà da proxy (reverse proxy) nella comunicazione verso il server.
 In questo modo  si sposta il singolo point of failure dal server C\&C al DNS server.
 
-Per rendere più complessa la rete ed eliminare anche questo point of failure si può creare un  \emph{double-flux} network. Il double-flux usa lo stesso schema per ciclare i \textit{name server} autoritativi che risolveranno l'hostname richiesto, traducendolo come visto in uno dei bot che farà da proxy verso il C\&C server. 
+Per rendere più complessa la rete ed eliminare anche questo point of failure si può creare un  \textit{double-flux} network. Il double-flux usa lo stesso schema per ciclare i \textit{name server} autoritativi che risolveranno l'hostname richiesto, traducendolo come visto in uno dei bot che farà da proxy verso il C\&C server. 
 
 Si noti che registrare ed eliminare un  record DNS sono operazioni veloci e quindi è possibile variare velocemente i bot che fungono da proxy o name server.
 
-Anche utilizzando questa tecnica rimane comunque il problema dell'hardcoding degli hostname all'interno del binario del bot. Per risolvere anche questo problema spesso  questa tecnica viene associata a \emph{Domain Generation Algorithm} (DGA) che verrà di seguito descritto.
+Anche utilizzando questa tecnica rimane comunque il problema dell'hardcoding degli hostname all'interno del binario del bot. Per risolvere anche questo problema spesso  questa tecnica viene associata a \textit{Domain Generation Algorithm} (DGA) che verrà di seguito descritto.
 
 \subsubsection{Domain Generation Algorithm (DGA)}
 \label{DGA}
@@ -166,7 +166,7 @@ Quando il bot vuole cercare di contattare il server, usa l'algoritmo per generar
 Così facendo non è necessario preinserire domini all'interno dell'eseguibile.  Molti DGA usano il tempo corrente come input, rendendo necessario che ogni bot abbia l'orologio di sistema sincronizzato per poter funzionare correttamente. 
 Se per esempio un bot dovesse generare 50.000 domini da testare, un ente governativo dovrebbe preregistrare tutti i 50.000 domini per poter evitare che il botmaster riesca nel suo intento. Inoltre va considerato che se le comunicazioni tra bot e server dovessero usare cifratura a chiave pubblica, anche preregistrando correttamente uno dei domini che la Botnet usa per coordinare i bot, non si riuscirebbe a prenderne il controllo in quanto la comunicazione verrebbe negata per via delle firme digitali non combacianti con quelle del botmaster.
 
-Un esempio di algoritmo DGA può essere il seguente:
+Un esempio di algoritmo DGA può essere il seguente \cite{inproceedings}:
 
 \begin{algorithmic}[1]
     \State $i \gets 0$
@@ -199,7 +199,7 @@ Il problema della ricerca iniziale dei peer può essere ovviata inserendo la lis
 
 Dato che la rete non è a maglia completa, deve anche essere garantito il trasporto affidabile dei comandi che in questo caso non è nativo di questa topologia di rete. Per questo motivo spesso si usano protocolli P2P già noti che hanno questa funzionalità già implementata. Se si vuole creare la Botnet attraverso un protocollo \textit{ad-hoc}, le funzionalità di consegna affidabile dei messaggi e di \textit{routing} devono essere implementate per poter garantire il corretto funzionamento della rete.
 
-Dato che non tutte i dispositivi sono direttamente raggiungibili dall'Internet a causa di possibili Firewall o NAT, spesso le Botnet classificano i bot in due categorie: \emph{super node} e \emph{NAT-node}.
+Dato che non tutti i dispositivi sono direttamente raggiungibili da Internet a causa di possibili Firewall o NAT, spesso le Botnet classificano i bot in due categorie: \textit{super node} e \textit{NAT-node}.
 A seguito dell'infezione la connettività viene rilevata e solo i NAT-node sono usati per attività maligne mentre i super node sono usati solo come tramite per le comunicazioni con i bot C\&C.
 
 \subsection{Ibrida}
@@ -217,30 +217,30 @@ Altre  Botnet ibride sono possibili sfruttando topologie diverse per task divers
 \section{Protocolli}
 Di seguito verranno brevemente descritti i protocolli più comunemente usati a livello comunicazionale e operazionale nelle Botnet. 
 \subsection{Protocolli Comunicazionali}
-Con Protocolli comunicazionali si intende quei protocolli usati all'interno della Botnet per la comunicazione tra bot e Server, all'interno di una rete Centralizzata, o tra bot e bot all'interno di una Botnet P2P.
+Con Protocolli comunicazionali si intende quei protocolli usati all'interno della Botnet per la comunicazione tra bot e Server, all'interno di una rete centralizzata, o tra bot e bot all'interno di una Botnet P2P.
 Ovviamente la scelta della topologia pone restrizioni sulle possibilità di scelta del protocollo comunicazionale.
 
 Le Botnet spesso usano protocolli già esistenti, semplificando lo sviluppo della rete.
 
-Il protocollo scelto può anche essere creato su misura. Questo permette di soddisfare  esigenze specifiche come un maggior mimetismo \footnote{eg. si potrebbe creare un protocollo che mimi il traffico legittimo}  o restrizioni di rete\footnote{eg. molte reti di corporazioni non permettono l'uso di particolari tipi di protocolli}.
+Il protocollo scelto può anche essere creato su misura. Questo permette di soddisfare  esigenze specifiche come un maggior mimetismo\footnote{eg. si potrebbe creare un protocollo che mimi il traffico legittimo.}  o restrizioni di rete\footnote{eg. molte reti di corporazioni non permettono l'uso di particolari tipi di protocolli.}.
 
 \subsubsection{Internet Relay Chat (IRC)}
 \label{IRC}
-Internet Relay Chat  è un protocollo a livello applicativo di messaggistica \textit{text-based}, basato su architettura Client-Server. Venne inizialmente creato  per lo sviluppo di applicazioni chat su Internet \cite{rfc1459}, in particolare inizialmente usato su Bulletin Board System (BBS)\footnote{sistema telematico client-server creato negli anni '70 prima che i Web Browser venissero realizzati. L'utente si connetteva a un server centrale per condividere e prelevare risorse.}.
+Internet Relay Chat  è un protocollo a livello applicativo di messaggistica \textit{text-based}, basato su architettura client-server. Venne inizialmente creato  per lo sviluppo di applicazioni chat su Internet \cite{rfc1459}, in particolare inizialmente usato su Bulletin Board System (BBS)\footnote{sistema telematico client-server creato negli anni '70 prima che i Web Browser venissero realizzati. L'utente si connetteva a un server centrale per condividere e prelevare risorse.}.
 IRC inizia a essere sviluppato nell'anno 1989. Nell'anno 1993 J.Oikarinen pubblica l'RFC 1459 in cui vengono pubblicate le specifiche del protocollo.
 
-Il Client comunica con il Server che è responsabile di consegnare i messaggi ad altri client e server.
-Messaggi possono essere scambiati  Client-Client o verso un gruppo di client attraverso \textit{canali}\footnote{gruppo di client a cui viene assegnato un nome. Un messaggio verso un canale arriva a tutti i client appartenenti al gruppo rappresentato.}. I canali possono essere protetti da password. 
+Il client comunica con il Server che è responsabile di consegnare i messaggi ad altri client e server.
+Messaggi possono essere scambiati  client-client o verso un gruppo di client attraverso \textit{canali}\footnote{gruppo di client a cui viene assegnato un nome. Un messaggio verso un canale arriva a tutti i client appartenenti al gruppo rappresentato.}. I canali possono essere protetti da password. 
 
 Il protocollo supporta anche il trasferimento di file.
 
-Questo protocollo facilita lo sviluppo di una Botnet basata su topologia Centralizzata. Il botmaster ad esempio potrebbe inviare i comandi verso un canale di bot, dove il C\&C in questo caso ricopre il ruolo di Server centrale incaricato di distribuire il messaggio a tutti i bot interessati. I canali come già detto, possono essere protetti da password per evitare che terzi prendano il controllo della Botnet. La capacità di file-transfer può essere sfruttata per distribuire malware, aggiornamenti della Botnet, file di configurazione, etc.
+Questo protocollo facilita lo sviluppo di una Botnet basata su topologia centralizzata. Il botmaster ad esempio potrebbe inviare i comandi verso un canale di bot, dove il C\&C in questo caso ricopre il ruolo di Server centrale incaricato di distribuire il messaggio a tutti i bot interessati. I canali come già detto, possono essere protetti da password per evitare che terzi prendano il controllo della Botnet. La capacità di file-transfer può essere sfruttata per distribuire malware, aggiornamenti della Botnet, file di configurazione, etc.
 
-Tra gli svantaggi di questo protocollo ci sono il fatto che è facilmente identificabile e che non è un protocollo che viene comunemente usato nelle attività di tutti i giorni (nonostante sia un protocollo molto diffuso su Internet) e quindi potrebbe essere bloccato preventivamente via Firewall\footnote{Spesso questo è il caso delle reti corporative}.
+Tra gli svantaggi di questo protocollo ci sono il fatto che è facilmente identificabile e che non è un protocollo che viene comunemente usato nelle attività di tutti i giorni (nonostante sia un protocollo molto diffuso su Internet) e quindi potrebbe essere bloccato preventivamente via Firewall\footnote{Spesso questo è il caso delle reti corporative.}.
 
 \subsubsection{HTTP}
 \label{HTTP}
-Uno dei protocolli a livello applicativo più utilizzati su Internet. Usato per la trasmissione di pagine web da web server a web client su Internet. È basato su architettura Client-Server dove la comunicazione di gruppo, al contrario di IRC, non è possibile. Vista il largo uso nella rete Internet, sono presenti tantissime implementazioni già pronte di client e server, rendendo lo sviluppo di una Botnet basata su protocollo HTTP facilitata.
+Uno dei protocolli a livello applicativo più utilizzati su Internet. Usato per la trasmissione di pagine web da web server a web client su Internet. È basato su architettura client-server dove la comunicazione di gruppo, al contrario di IRC, non è possibile. Visto il largo uso nella rete Internet, sono presenti tantissime implementazioni già pronte di client e server, rendendo lo sviluppo di una Botnet basata su protocollo HTTP facilitata.
 
 Vista la struttura di HTTP può essere usato agilmente per creare una Botnet con topologia centralizzata.
 
@@ -255,12 +255,12 @@ All'interno di questi livelli aggiuntivi si potrebbe anche aggiungere la possibi
 
 Il fatto che HTTP sia largamente utilizzato su Internet rende lo scambio di messaggi attraverso questo protocollo non sospetto.
 
-La sua variante  HTTPS permette l'uso di comunicazione HTTP all'interno di una connessione cifrata, rendendo quasi\footnote{i firewall posso usare una tecnica chiamata \textit{HTTPS interception} dove si sfrutta lo stesso principio degli attacchi Man In The Middle(MITM)\footnotemark{} \footnotetext{attacco informatico in cui l'attaccante si frappone tra la sorgente e la destinazione della comunicazione di rete, permettendogli potenzialmente di leggere/modificare/eliminare i pacchetti intercettati } per analizzare il contenuto dei pacchetti HTTPS} impossibile analizzare il contenuto dei messaggi da parte di strumenti di rilevazione.
+La sua variante  HTTPS permette l'uso di comunicazione HTTP all'interno di una connessione cifrata, rendendo quasi\footnote{i firewall posso usare una tecnica chiamata \textit{HTTPS interception} dove si sfrutta lo stesso principio degli attacchi Man In The Middle (MITM)\footnotemark{} \footnotetext{attacco informatico in cui l'attaccante si frappone tra la sorgente e la destinazione della comunicazione di rete, permettendogli potenzialmente di leggere/modificare/eliminare i pacchetti intercettati.} per analizzare il contenuto dei pacchetti HTTPS.} impossibile analizzare il contenuto dei messaggi da parte di strumenti di rilevazione.
 
 \subsubsection{Server Message Block}
 Server Message Block (SMB) è un protocollo  originariamente specificato da Microsoft, IBM e Intel per la condivisione di file, stampanti, porte seriali e comunicazioni di varia natura attraverso la rete \cite{SMB}.
 
-Basato su architettura Client-Server. Un client si connette a un server autenticandosi con credenziali utente o come anonimo. Una volta connesso può richiedere una lista di \textit{share} disponibili. Con \textit{share} si intende una lista di file o servizi accessibili.
+Basato su architettura client-server. Un client si connette a un server autenticandosi con credenziali utente o come anonimo. Una volta connesso può richiedere una lista di \textit{share} disponibili. Con \textit{share} si intende una lista di file o servizi accessibili.
 
 SMB implementa anche meccanismi di comunicazione tra processi via network.
 
@@ -277,7 +277,7 @@ La creazione di un protocollo \textit{ex novo} permette di creare una comunicazi
 
 La maggior parte dei protocolli creati appositamente risulta basata su UDP o TCP a livello di trasporto. Ci sono anche casi osservati di protocolli basati su ICMP. Come già discusso precedentemente a seconda della topologia scelta  si devono implementare tutte le accortezze necessarie al corretto funzionamento della rete. 
 
-Se si desidera una rete P2P è necessario implementare la comunicazione affidabile dei messaggi e gestire i messaggi duplicati. La questione dei messaggi duplicati può essere ovviata associando un ID ai comandi.
+Se si desidera una rete P2P è necessario implementare la comunicazione affidabile dei messaggi e gestire i messaggi duplicati. La questione dei messaggi duplicati può essere ovviata associando un identficativo (ID) ai comandi.
 Il trasporto affidabile dei messaggi deve essere gestita anche nel caso si utilizzi UDP come protocollo a livello di trasporto. Questo può essere garantito ad esempio implementando ritrasmissione dei messaggi e l'invio di acknowledgment.
 Un protocollo basato su UDP con consegna affidabile dei messaggi avrebbe anche il vantaggio di poter permettere più connessioni contemporaneamente in quanto nessuna connessione deve essere mantenuta al contrario di TCP.
 
@@ -290,7 +290,7 @@ Oltre ai protocolli usati per il normale funzionamento della Botnet, sono necess
 Di seguito verranno presentati alcuni esempi di  protocolli usati per le più comuni attività  di una Botnet:
 
 \begin{itemize}
-    \item Per inviare spam via email deve essere in grado di poter usare  Simple Mail Transport Protocol (SMTP). SMTP è un protocollo Client-Server usato per inviare messaggi di posta elettronica attraverso server dedicato (Server SMTP). Dato che molti server di posta elettronica richiedono autenticazione solo per inviare messaggi fuori dalla rete locale, questa risulta la principale causa di spam. Un bot potrebbe infatti sfruttare la sua posizione all'interno della rete per inviare email di spam attraverso il mail server comune, verso altri nodi della rete locale. Per questo motivo molti email provider bloccano email provenienti da IP di reti private;
+    \item Per inviare spam via email deve essere in grado di poter usare  Simple Mail Transport Protocol (SMTP). SMTP è un protocollo slient-server usato per inviare messaggi di posta elettronica attraverso server dedicato (Server SMTP). Dato che molti server di posta elettronica richiedono autenticazione solo per inviare messaggi fuori dalla rete locale, questa risulta la principale causa di spam. Un bot potrebbe infatti sfruttare la sua posizione all'interno della rete per inviare email di spam attraverso il mail server comune, verso altri nodi della rete locale. Per questo motivo molti email provider bloccano email provenienti da IP di reti private;
     \item HTTP e HTTPS vengono usati per eseguire \textit{click fraude}, ovvero simulare il click su un URL o  annuncio pubblicitario col fine di alterarne le statistiche di visita della risorsa. In questo modo il botmaster può fare profitto grazie al numero falsato di visite all'annuncio o pagina web;
     \item HTTP, UDP e TCP vengono anche usati per eseguire attacchi DDoS in cui si cerca di sovraccaricare il network del servizio target. Un altro modo di sovraccaricare il servizio è attraverso l'invio di richieste computazionali intensive con l'intento di saturare la capacità di calcolo dell'applicazione target.
 \end{itemize}
@@ -319,11 +319,11 @@ Di seguito verranno brevemente raccolte alcune delle tecniche usate dalle Botnet
  Dato che questa tecnica non richiede alcuna chiave, chiunque conosca l'algoritmo di compressione può  decomprimere i dati e quindi risalire al contenuto originario.
 
  \subsection*{Steganografia}
- La steganografia è un'altra tecnica di offuscamento. Essa consiste nel nascondere informazioni all'interno di \textit{contenitori} che non sono pensati per la comunicazione. Simile a livello di logica ai \emph{canali nascosti} ma che usa file (eg. immagini, video, documenti, etc.) per comunicare al posto degli attributi dei  pacchetti di rete.
+ La steganografia è un'altra tecnica di offuscamento. Essa consiste nel nascondere informazioni all'interno di \textit{contenitori} che non sono pensati per la comunicazione. Simile a livello di logica ai \textit{canali nascosti} ma che usa file (eg. immagini, video, documenti, etc.) per comunicare al posto degli attributi dei  pacchetti di rete.
 
  In passato sono state proposte Botnet capaci di sfruttare questo principio all'interno dei social network, incapsulando le informazioni dei comandi all'interno di immagini JPEG postate dall'utente \cite{nagaraja2011stegobot}.
 
- Altri esempio peculiare di Botnet di questo tipo è quella ideata da A.Compagno e collaboratori, che hanno sfruttato i messaggi di testo all'interno dei social network, usando caratteri non visualizzati dai web browser \cite{nagaraja2011stegobot}.
+ Altro esempio peculiare di botnet di questo tipo è quella ideata da A.Compagno e collaboratori, che hanno sfruttato i messaggi di testo all'interno dei social network, usando caratteri non visualizzati dai web browser \cite{nagaraja2011stegobot}.
 
 
  \subsection*{Stepping Stones}
@@ -346,23 +346,23 @@ Di seguito verranno brevemente raccolte alcune delle tecniche usate dalle Botnet
  
 
 \chapter{Infrastruttura di testing}
-Prima di poter analizzare le Botnet dinamicamente, è necessario progettare ed eseguire il \textit{deploy} di un infrastruttura  sicura, in cui è possibile eseguire i malware relativi alla Botnet oggetto di studio senza rischiare di compromettere dispositivi al di fuori del perimetro designato.
+Prima di poter analizzare le botnet dinamicamente, è necessario progettare ed eseguire il \textit{deploy} di un infrastruttura  sicura, in cui è possibile eseguire i malware relativi alla botnet oggetto di studio senza rischiare di compromettere dispositivi al di fuori del perimetro designato.
 
 
-Il deploy dell'infrastruttura è stato eseguito su un Server VMWare ESXi (\ref{esxi})  raggiungibile attraverso Virtual Private Network (VPN), in quanto situato all'interno della rete del campus Universitario di Cesena. Attraverso le capacità di virtualizzazione del server sono state create una macchina Linux per ospitare il C\&C server e due macchine che verranno infettate con malware per trasformarli in bot attivi. Le macchine bot in questione sono una basata su Linux e l'altra su Windows.  Queste macchine sono assegnate a una rete VLAN isolata così che non siano in grado di comunicare con altri dispositivi al di fuori delle macchine soggette al test. Chiameremo questa rete \emph{Botnet Vlan}.
+Il deploy dell'infrastruttura è stato eseguito su un Server VMWare ESXi (\ref{esxi})  raggiungibile attraverso Virtual Private Network (VPN), in quanto situato all'interno della rete dell'Università di Bologna, Campus di Cesena. Attraverso le capacità di virtualizzazione del server sono state create una macchina Linux per ospitare il C\&C server e due macchine che verranno infettate con malware per trasformarli in bot attivi. Le macchine bot in questione sono una basata su Linux e l'altra su Windows.  Queste macchine sono assegnate a una rete VLAN isolata così che non siano in grado di comunicare con altri dispositivi al di fuori delle macchine soggette al test. Chiameremo questa rete \textit{botnet Vlan}.
 
 Per far in modo che le macchine sotto testing potessero occasionalmente interfacciarsi alla rete Internet in modo controllato è stato aggiunto un Firewall (\ref{firewall}). La macchina in questione usa  ClearOs (\ref{ClearOS}) come sistema operativo e ha due Network Interface Card (NIC).
-Una delle NIC è collegata a una VLAN connessa a Internet e ha indirizzo IP assegnatogli attraverso Dynamic Host Configuration Protocol (DHCP). L'altra NIC è collegata alla Botnet Vlan e ha indirizzo IP statico assegnatogli manualmente. 
+Una delle NIC è collegata a una VLAN connessa a Internet e ha indirizzo IP assegnatogli attraverso Dynamic Host Configuration Protocol (DHCP). L'altra NIC è collegata alla botnet Vlan e ha indirizzo IP statico assegnatogli manualmente. 
 
-Una volta configurato il Firewall, le tabelle di routing dei bot e del C\&C server sono state modificate per fare in modo che il Firewall operasse da gateway per questi dispositivi. In questo modo quando i dispositivi all'interno della Botnet Vlan cercheranno di comunicare all'esterno della rete il Firewall filtrerà le comunicazioni.
+Una volta configurato il Firewall, le tabelle di routing dei bot e del C\&C server sono state modificate per fare in modo che il Firewall operasse da gateway per questi dispositivi. In questo modo quando i dispositivi all'interno della botnet Vlan cercheranno di comunicare all'esterno della rete il Firewall filtrerà le comunicazioni.
 
 ClearOS ha diversi moduli installabili per configurare le funzionalità di Firewall. In questo caso è stato utilizzato un modulo basato su Iptables (\ref{iptables}).
     
-Oltre alle funzioni di Firewall sono state usate le funzionalità di server DHCP che il sistema operativo offre attraverso modulo dedicato. Per mezzo di  questo sono stati assegnati gli indirizzi IP alle macchine interne alla Botnet Vlan.
+Oltre alle funzioni di Firewall sono state usate le funzionalità di server DHCP che il sistema operativo offre attraverso modulo dedicato. Per mezzo di  questo sono stati assegnati gli indirizzi IP alle macchine interne alla botnet Vlan.
 
-In seguito alla conferma della connettività  Internet delle macchine interne alla Botnet Vlan,  sulle macchine Linux è stato installato per comodità un ambiente Desktop, di cui erano privi.
+In seguito alla conferma della connettività  Internet delle macchine interne alla botnet Vlan,  sulle macchine Linux è stato installato per comodità un ambiente Desktop, di cui erano privi.
 
-In fine per velocizzare il deploy dei nodi della Botnet nelle rispettive macchine  e per facilitare il testing è stato installato Docker all'interno delle macchine della VLAN Botnet.
+In fine per velocizzare il deploy dei nodi della botnet nelle rispettive macchine  e per facilitare il testing è stato installato Docker all'interno delle macchine della  botnet Vlan.
 
 Per lo scambio di file con macchine fuori dal perimetro del server ESXi è possibile usare SSH Tunneling, a patto che il dispositivo interessato sia connessa alla stessa VPN del server.
     
@@ -370,7 +370,7 @@ Di seguito verranno descritte più nel dettaglio le principali tecnologie sopra 
 
 \section{Server VMWare ESXi}
 \label{esxi}
-Il server sul quale sono stati effettuati i test usa  ESXi (Elastic Sky X integrated) \cite{esxi} sviluppato da VMWare come \emph{hypervisor bare metal} per la creazione e  gestione di macchine virtuali.
+Il server sul quale sono stati effettuati i test usa  ESXi (Elastic Sky X integrated) \cite{esxi} sviluppato da VMWare come \textit{hypervisor bare metal} per la creazione e  gestione di macchine virtuali.
 
 
 Un hypervisor, anche conosciuto come \textit{virtual machine monitor}, è un tipo di software di virtualizzazione che supporta la creazione e il management di macchine virtuali \cite{desai2013hypervisor,techtargetHypervisor}. Consente a un computer host di supportare diverse \textit{guest Virtual Machine (VM)}  , condividendo le risorse come memoria e potenza di calcolo.
@@ -380,12 +380,12 @@ A seconda delle esigenze le risorse vengono suddivise e trasferite dall'ambiente
 
 Esistono due tipi di hypervisor:
 \begin{description}
-    \item[tipo 1 o \textit{bare metal}] come un leggero sistema operativo che esegue direttamente sull'hardware di macchina host
+    \item[tipo 1 o \textit{bare metal}] come un leggero sistema operativo che esegue direttamente sull'hardware di macchina host;
     \item[tipo 2 o \textit{hosted}] livello software  che viene eseguito  sopra un sistema operativo già funzionante, come una normale applicativo.
 \end{description}
 
 Le principali differenze tra questi sono che l'hypervisor di tipo 1 è installato nell'unità di archiviazione della macchina host ed esegue direttamente sull'hardware come farebbe un sistema operativo, mentre il tipo 2 è installato come un normale software ed esegue sopra un sistema operativo di cui sfrutta le capacità di virtualizzazione.
-L'hypervisor bare metal risulta essere più sicuro in quanto non in contatto con il sistema operativo. Infatti in caso di malfunzionamento del sistema operativo o in caso risulti vulnerabile a possibili attacchi comprometterebbe la sicurezza dell'intera struttura virtualizzata.
+L'hypervisor bare metal tipicamente risulta essere più sicuro in quanto non in contatto con il sistema operativo. Infatti in caso di malfunzionamento del sistema operativo o in caso risulti vulnerabile a possibili attacchi comprometterebbe la sicurezza dell'intera struttura virtualizzata.
 
 Inoltre i \textit{tipo 1} risultano più efficienti e veloci in quanto le richieste di risorse tra hardware e hypervisor non devono passare attraverso il livello aggiuntivo del sistema operativo che ne fa da tramite.
 
@@ -422,17 +422,18 @@ Navigando sul web si possono trovare numerose tecnologie atte allo scopo. In que
 ClearOS \cite{clearos} è un sistema operativo open source basato su CentOS. Ideato per le piccole medie imprese che vogliono soluzioni flessibili. ClearOS offre diverse capacità tra cui Intrusion Detection, Content Filtering, Firewall, Bandwith Management, Domain Controller, Mail Server, DNS Server, NAT, DHCP Server, Web Server, e molto altro.
 Il punto forte di ClearOS è la facilità di utilizzo oltre alla flessibilità. Tutte le capacità di questa piattaforma sono distribuite sotto forma di moduli scaricabili al bisogno attraverso una comodissima web GUI. Oltre ai moduli gratuiti, ClearOS offre soluzioni a pagamento più adatte al mondo \textit{enterprise}. In questo modo l'azienda interessata può comprare solo i moduli che desidera ed espandersi al bisogno acquistando ulteriori moduli. 
 
-Una volta installato, configurato e impostato come gateway all'interno della Botnet Vlan, è stato installato il modulo aggiuntivo di Server DHCP, per configurare in automatico gli indirizzi di rete delle macchine interne alla Vlan.
+Una volta installato, configurato e impostato come gateway all'interno della botnet Vlan, è stato installato il modulo aggiuntivo di Server DHCP, per configurare in automatico gli indirizzi di rete delle macchine interne alla Vlan.
 In seguito è stato anche testato il modulo DNS, che in fase di testing non è stato utilizzato in quanto i dispositivi in rete venivano referenziati per indirizzo IP, e alcuni moduli gratuiti di Intrusion Detection System (IDS). Tuttavia i moduli di IDS gratuiti non sono stati ritenuti all'altezza del compito che avrebbero dovuto svolgere e sono stati quindi disinstallati. Va comunque considerato che non sono state testate le soluzione a pagamento che sicuramente sarebbero state più adatte al contesto. 
 In fine prima di selezionare un modulo Firewall tra le opzioni disponibili offerte da  ClearOS, sono stati studiati Netfilter (\ref{netfilter}), Iptables (\ref{iptables}), Nftables (\ref{nftables}) e Firewalld (\ref{firewalld}). Una volta comprese queste tecnologie è stata scelta una soluzione (modulo) basata su Iptables.
 
-Attraverso il modulo di Firewall sono state scritte delle regole, con sintassi uguale a quella di Iptables, per le seguenti security policy:\begin{itemize}
+Attraverso il modulo di Firewall sono state scritte delle regole, con sintassi uguale a quella di Iptables, per le seguenti security policy:
+\begin{itemize}
     \item Non permettere traffico ipv6 da, verso, attraverso il Firewall;
     \item Permetti traffico  da e verso la web GUI del Firewall;
     \item Permetti traffico  DHCP da e verso il Firewall;
     \item Permetti traffico  DNS da e verso il Firewall;
     \item Permetti traffico  SSH da e verso il Firewall;
-    \item Permetti traffico da e verso gli Intrusion Detection System\footnote{la macchina con ClearOS è stata utilizzata per comodità come  punto di interfacciamento con la web GUI del Firewall e le web GUI degli IDS così che si potesse avere il controllo della rete attraverso un unico web browser};
+    \item Permetti traffico da e verso gli Intrusion Detection System\footnote{la macchina con ClearOS è stata utilizzata per comodità come  punto di interfacciamento con la web GUI del Firewall e le web GUI degli IDS così che si potesse avere il controllo della rete attraverso un unico web browser.};
     \item Nega tutto il traffico non precedentemente permesso da/verso/attraverso il Firewall.
 \end{itemize}
 
@@ -458,12 +459,12 @@ In particolare gli hook sono:
 \begin{figure}[hbtp]
     \centering
     \includegraphics[width=8cm]{netfilter_hooks.png}
-    \caption{Flusso del pacchetto attraverso il Linux network stack con Netfilter hook \cite{NetfilterHooks}}
+    \caption{Flusso del pacchetto attraverso il Linux network stack con Netfilter hook \cite{NetfilterHooks}.}
     \label{fig:netfilter_hooks}
 \end{figure}
 I moduli Kernel registrati in questo modo, possono assegnare un numero di priorità per identificare deterministicamente in quale ordine verranno eseguite le funzioni di callback.
 
-Quando una funzione di callback viene eseguita, il modulo può decidere di alterare il pacchetto responsabile dell'esecuzione della funzione. Al termine dell'esecuzione, inoltra al framework la propria decisione sul futuro del pacchetto. Il pacchetto può quindi essere scartato, ignorato, inserito in coda per poter essere maneggiato da software che appartengono allo \textit{spazio utente}\footnote{Netfilter è un framework che esegue a livello di Kernel  in Kernel mode e quindi l'utente che esegue software in user mode non potrebbe interagire direttamente con questo}, o potrebbe proseguire il suo corso attraverso lo stack.
+Quando una funzione di callback viene eseguita, il modulo può decidere di alterare il pacchetto responsabile dell'esecuzione della funzione. Al termine dell'esecuzione, inoltra al framework la propria decisione sul futuro del pacchetto. Il pacchetto può quindi essere scartato, ignorato, inserito in coda per poter essere maneggiato da software che appartengono allo \textit{spazio utente}\footnote{Netfilter è un framework che esegue a livello di Kernel  in Kernel mode e quindi l'utente che esegue software in user mode non potrebbe interagire direttamente con questo.}, o potrebbe proseguire il suo corso attraverso lo stack.
 
 Per interagire con il framework Netfilter dunque è necessario sviluppare un modulo Kernel che possa registrare funzioni di callback presso gli hook o scrivere un applicativo che interagisca con la coda nello spazio utente (user mode).
 
@@ -476,8 +477,8 @@ Iptables usa tabelle per organizzare queste regole. Nello specifico le tabelle \
     \item[Filter table] Per controllare il flusso dei pacchetti che entra ed esce dal sistema;
     \item[NAT table] Per ridirigere connessioni verso altre interfacce di rete;
     \item[Mangle table] Per modificare header di pacchetti;
-    \item[Raw table] Provvede meccanismo per marcare pacchetti ed escluderli dal tracking di connessione\footnote{Netfilter  riesce a identificare un pacchetto come parte di una connessione e Iptables quindi sfrutta questa capacità in automatico};
-    \item[Security table] Usata per interagire con SELinux\footnote{Security Enhanced Linux è un modulo di sicurezza del Kernel Linux che fornisce insieme di strumenti di sicurezza}.
+    \item[Raw table] Provvede meccanismo per marcare pacchetti ed escluderli dal tracking di connessione\footnote{Netfilter  riesce a identificare un pacchetto come parte di una connessione e Iptables quindi sfrutta questa capacità in automatico.};
+    \item[Security table] Usata per interagire con SELinux\footnote{Security Enhanced Linux è un modulo di sicurezza del Kernel Linux che fornisce insieme di strumenti di sicurezza.}.
 \end{description}
 Ogni tabella è a sua volta organizzata in \textit{chain} che contengono le vere e proprie regole. Mentre le tabelle rappresentano lo scopo generale delle regole che contengono, le chain rappresentano i Netfilter hook a cui si riferiscono e da cui vengono attivati. Le chain quindi determinano quando le regole al loro interno verranno valutate.
 I nomi delle chain fanno riferimento ai nomi degli hook a cui sono associati e sono:
@@ -507,7 +508,7 @@ Tra i vantaggi che offre rispetto a Iptables ci sono:
     \item Possibilità di creare regole più complesse attraverso strutture dati come map, set, concatenazioni, diminuendo quindi il numero di regole da controllare e quindi aumentando l'efficienza;
     \item Non ha table e chain predefinite, sfrutta combinazione di parametri selezionabili come il tipo di hook e lo scopo per determinarne il comportamento;
     \item Più facile da configurare;
-    \item Possibilità di gestire regole IPv4 e IPv6   attraverso lo stesso tool, mentre in Iptables le configurazioni sono gestite separatamente\footnote{viene usato  tool \textit{iptables} per le configurazioni IPv4 e \textit{ip6tables} per quelle IPv6}.
+    \item Possibilità di gestire regole IPv4 e IPv6   attraverso lo stesso tool, mentre in Iptables le configurazioni sono gestite separatamente\footnote{viene usato  tool \textit{iptables} per le configurazioni IPv4 e \textit{ip6tables} per quelle IPv6.}.
 \end{itemize}
 
 \subsection{Firewalld}
@@ -520,19 +521,19 @@ Il funzionamento alla base di Firewalld è indipendente dal fatto che venga util
 \label{docker}
 In uno scenario di normale sviluppo di un'applicazione \textit{end-to-end}, dove si vogliono utilizzare diversi servizi che devono cooperare tra loro, ci possono essere le seguenti problematiche da tenere in considerazione:
 \begin{description}
-    \item[Compatibilità/dipendenze] I diversi servizi dell'applicativo possono richiedere differenti versioni della stessa libreria. Le librerie devono essere compatibili con il sistema operativo e l'hardware sottostante. Inoltre queste hanno dipendenze che devono essere soddisfatte;
+    \item[Compatibilità/dipendenze] I diversi servizi dell'applicativo possono richiedere differenti versioni della stessa libreria. Le librerie devono essere compatibili con il sistema operativo e l'hardware sottostante. Inoltre queste hanno dipendenze che devono essere soddisfatte.
     Il problema di soddisfare tutte queste esigenze contemporaneamente per permettere il corretto funzionamento dell'applicativo è conosciuto come \textit{Matrix~from~hell};
     \item[Tempi di Setup] La configurazione di un nuovo ambiente di sviluppo da zero sottintende che lo sviluppatore debba assicurarsi di avere il giusto sistema operativo e le librerie necessarie nelle versioni corrette, e che le dipendenze siano risolte correttamente. Questo processo può essere laborioso e non banale,  oltre che richiedere una considerevole quantità di tempo;
     \item[Differenti ambienti di sviluppo] Essendoci diversi ambienti di sviluppo, test e produzione, non è detto che, una volta completata una modifica,  l'applicativo funzioni correttamente quando viene eseguito in un ambiente differente.
 \end{description}
 
 Questi sono alcuni dei motivi per cui può essere utile containerizzazione i servizi.
-Con containerizzazione si intende raggruppare  il codice software e tutti i relativi componenti necessari, come librerie, framework e altre dipendenze, in modo che risultino isolate in un proprio contenitore, detto \emph{Container}.
+Con containerizzazione si intende raggruppare  il codice software e tutti i relativi componenti necessari, come librerie, framework e altre dipendenze, in modo che risultino isolate in un proprio contenitore, detto \textit{Container}.
 
 In questo modo è possibile eseguire e spostare il software o l'applicazione contenuta all'interno in qualsiasi ambiente o infrastruttura indipendentemente dal sistema operativo eseguito.
 Lo scopo quindi della containerizzazione è il poter eseguire applicativi, servizi, processi ovunque, in qualsiasi momento e in un ambiente isolato, risolvendo in questo modo le problematiche sopra citate.
 
-Un Container può essere visto come un processo che dà all'utente l'illusione di eseguire sopra un sistema operativo, si parla infatti di \emph{lightweight process virtualization}. In particolare sfruttano componenti del Kernel Linux per virtualizzare, isolare e gestire le risorse.
+Un Container può essere visto come un processo che dà all'utente l'illusione di eseguire sopra un sistema operativo, si parla infatti di \textit{lightweight process virtualization}. In particolare sfruttano componenti del Kernel Linux per virtualizzare, isolare e gestire le risorse.
 
 I Container condividono il Kernel del sistema operativo sul quale eseguono, così facendo non hanno bisogno di dover virtualizzare il sistema operativo per poter eseguire componenti software \cite{mouat2015using}.  
 Essi \textit{vivono} solo per il tempo dell'esecuzione del processo o del servizio che ospitano.
@@ -545,7 +546,7 @@ Docker usa le Docker Image, che rappresentano una serie di istruzioni da eseguir
 
 Le Docker Image vengono create a partire da file di configurazione, detti Dockerfile. Nel Dockerfile viene specificata la Docker Image di partenza e tutte le operazioni, che su questa verranno eseguite, atte a costruire il template per i futuri Container. Quando viene eseguita la \textit{build} dell'immagine, ogni operazione all'interno del Dockerfile costituisce un livello che viene posta sopra al livello dell'operazione precedente. Ogni livello contiene solo le differenze dal livello precedente. In questo modo se la build dovesse fallire, al tentativo successivo riprenderebbe dal livello in cui si era interrotto. Questo meccanismo permette anche di accelerare i tempi in caso di \textit{rebuild} in seguito a piccoli cambiamenti nel Dockerfile, in quanto i livelli verranno ricostruiti dal primo cambiamento a seguire.
 
-I livelli sono \textit{read only} e sono condivisi tra tutte le istanze di Container della stessa immagine. Quando viene eseguito un Container, si crea un ulteriore livello che è \textit{readable} e \textit{writeable}, che chiameremo 'livello container'. Quando viene modificato un file read only all'interno di un  livello non modificabile, si crea una copia locale di quel file nel livello container e la modifica viene eseguita sulla  copia\footnote{tecnica definita come \textit{Copy on write}}.
+I livelli sono \textit{read only} e sono condivisi tra tutte le istanze di Container della stessa immagine. Quando viene eseguito un Container, si crea un ulteriore livello che è \textit{readable} e \textit{writeable}, che chiameremo 'livello container'. Quando viene modificato un file read only all'interno di un  livello non modificabile, si crea una copia locale di quel file nel livello container e la modifica viene eseguita sulla  copia\footnote{tecnica definita come \textit{Copy on write}.}.
 
 Quando si crea un nuovo file questo viene aggiunto  al livello container. Nel momento in cui il Container viene rimosso o finisce la propria esecuzione, tutto il contenuto del livello container viene cancellato. Se è richiesta  persistenza di alcune directory  e del relativo contenuto è necessario eseguire il \textit{mount} di una directory dell'host all'interno del container con direttive apposite.  Questo equivale a livello logico all'associare una directory dell'host a una directory del Container, così che al termine dell'esecuzione i dati all'interno della directory del Container persistano nella directory dell'host.
 
@@ -574,9 +575,9 @@ Un Intrusion Detection System è un software o hardware che identifica azioni no
     \item Anomaly-based Intrusion Detection System (AIDS).
 \end{itemize}
 
-Con SIDS si intende strumenti di rilevazione basati su tecniche di \textit{pattern matching} per scovare attacchi già noti. Quando la \textit{signature}\footnote{attraverso l'estrazione di \textit{features} prefissate si può generare la firma  di un particolare evento per usarla come identificativo univoco di questo} di un evento combacia con la signature di un'intrusione nota all'interno del database di signature, viene generato un segnale d'allarme.
+Con SIDS si intende strumenti di rilevazione basati su tecniche di \textit{pattern matching} per scovare attacchi già noti. Quando la \textit{signature}\footnote{attraverso l'estrazione di \textit{features} prefissate si può generare la firma  di un particolare evento per usarla come identificativo univoco di questo.} di un evento combacia con la signature di un'intrusione nota all'interno del database di signature, viene generato un segnale d'allarme.
 
-Questi solitamente hanno un'ottima accuratezza per quanto riguarda la rilevazione di minacce già note ma non possono rilevare \textit{attacchi zero-day}\footnote{attacchi informatici che sfruttano vulnerabilità di cui non si conosce l'esistenza o che non sono state ancora risolte} dato che non esistono signature di tale attacco sino a quanto la signature di questo viene estratto e aggiunto al database.
+Questi solitamente hanno un'ottima accuratezza per quanto riguarda la rilevazione di minacce già note ma non possono rilevare \textit{attacchi zero-day}\footnote{attacchi informatici che sfruttano vulnerabilità di cui non si conosce l'esistenza o che non sono state ancora risolte.} dato che non esistono signature di tale attacco sino a quanto la signature di questo viene estratto e aggiunto al database.
 Gli approcci SIDS soffrono anche nell'identificare le varianti di malware noti, in quanto variazioni nel codice potrebbero comportare una signature differente al malware originale.
 
 Approcci tradizionali di SIDS sfruttano i \textit{log} di macchina host e l'analisi del traffico di rete per scovare azioni, comandi, pattern riconducibili a malware noti.
@@ -601,7 +602,7 @@ Un'altra classificazione possibile degli IDS è basata sul tipo di sergenti dati
     \item Network-Based IDS (NIDS).
 \end{itemize}
 
-Gli HIDS analizzano i log originati dal sistema host e dalle \textit{sorgenti di Auditing}\footnote{sorgenti di eventi generati in seguito a controlli specifici}. Sono capaci di individuare minacce che non usano traffico di rete.
+Gli HIDS analizzano i log originati dal sistema host e dalle \textit{sorgenti di Auditing}\footnote{sorgenti di eventi generati in seguito a controlli specifici.}. Sono capaci di individuare minacce che non usano traffico di rete.
 
 I NIDS monitorano il traffico di rete estratto attraverso appositi strumenti di cattura. Possono essere usati per monitorare molteplici computer su stessa rete al contrario di HIDS che sono installati su una macchina specifica. Sono capaci di individuare minacce esterne prima che si propaghino tra dispositivi. A seconda della rete da monitorare possono essere richieste capacità di hardware elevate per gestire correttamente alti traffici di rete.
 
@@ -658,7 +659,7 @@ Con  ESM si intende l'aggiunta delle capacità di  monitoring degli \textit{end-
 \begin{figure}[hbtp]
     \centering
     \includegraphics[width=8cm]{res/fig/SecOnionExample1.png}
-    \caption{Esempio di utilizzo di Security Onion all'interno di un network enterprise \cite{SecOnionFig1}}
+    \caption{Esempio di utilizzo di Security Onion all'interno di un network enterprise \cite{SecOnionFig1}.}
     \label{fig:seconionexample}
 \end{figure}
 
@@ -671,7 +672,7 @@ Di seguito verranno brevemente descritti i principali software che vengono utili
 Di seguito verranno descritti i principali tool utilizzati da Security Onion durante il funzionamento all'interno di un'architettura distribuita. L'architettura in questione verrà meglio analizzata successivamente.
 \subsubsection*{Suricata}
 Suricata \cite{suricata} è un NIDS open source, maturo e robusto. Ispeziona il traffico di rete usando regole e linguaggio di signature oltre ad avere supporto a LUA \cite{LUA} scripting per rilevazione di minacce complesse. Attraverso l'integrazione di linguaggio di scripting è possibile, ad esempio, elaborare il payload di un pacchetto di rete prima di cercare possibili fingerprint match, aumentando le difese contro le tecniche di offuscamento. 
-Suricata è anche in grado di agire attivamente in caso di intrusione, per questo motivo è anche classificato come Intrusion Prevention System (IPS). Inoltre è anche in grado di memorizzare PCAP file\footnote{file contenenti pacchetti catturati dal traffico di rete} per analisi successive.
+Suricata è anche in grado di agire attivamente in caso di intrusione, per questo motivo è anche classificato come Intrusion Prevention System (IPS). Inoltre è anche in grado di memorizzare PCAP file\footnote{file contenenti pacchetti catturati dal traffico di rete.} per analisi successive.
 Viene quindi principalmente usato come SIDS all'interno di Security Onion.
 \subsubsection*{ZEEK}
 ZEEK \cite{ZEEK} è un tool di analisi del traffico di rete. Al contrario di Suricata non è ottimizzato per la ricerca di signature e non fornisce memorizzazione della cattura del traffico di rete. Il suo scopo è interpretare il traffico di rete e generare notevoli volumi di informazioni riguardanti il comportamento della rete, fornendo visibilità e contesto, oltre a offrire capacità come:
@@ -690,7 +691,7 @@ Offre inoltre metodi per la lettura rapida ed efficiente di set specifici di pac
 Si può accedere a cattura dei pacchetti memorizzai attraverso una qualsiasi interfaccia PCAP o attraverso Command Line Interface (CLI).
 
 \subsubsection*{Strelka}
-Strelka \cite{strelka} è un sistema di scansione di file in tempo reale, utilizzato per la ricerca e rilevazione di minacce o per analisi di incident response. Il suo scopo è l'estrazione di file e metadati su larga scala. È in grado di utilizzare regole YARA\footnote{le regole YARA usano pattern  come sequenze  di byte  o stringhe riconducibili  a malware noti} per l'identificazione di minacce note.
+Strelka \cite{strelka} è un sistema di scansione di file in tempo reale, utilizzato per la ricerca e rilevazione di minacce o per analisi di incident response. Il suo scopo è l'estrazione di file e metadati su larga scala. È in grado di utilizzare regole YARA\footnote{le regole YARA usano pattern  come sequenze  di byte  o stringhe riconducibili  a malware noti.} per l'identificazione di minacce note.
 
 In Security Onion viene utilizzato per analizzare i file estratti da ZEEK e Suricata durante l'analisi del traffico di rete.
 
@@ -705,11 +706,11 @@ Con Elastic Stack \cite{elasticstack} si intende una collezione di software open
 Il suo scopo è aiutare l'utente a raccogliere dati da qualsiasi sorgente e in qualsiasi formato per poter poi eseguire ricerche, analisi e visualizzazioni dei dati.
 Questa collezione era precedentemente chiamata come ELK stack, dove ELK rappresenta l'acronimo delle sue componenti software, ovvero:
 \begin{description}
-    \item [Elasticsearch] Motore di ricerca e analisi distribuito, basato su interfaccia RESTful e usato per moltissimi casi d'uso. Componente che rappresenta il cuore dell'Elastic Stack. Mantiene e indicizza i  dati per ricerche veloci e precise. 
-    In Security Onion riceve i log e ne effettua il parsing prima di memorizzarli e indicizzarli.
+    \item [Elasticsearch] Motore di ricerca e analisi distribuito, basato su interfaccia RESTful e usato per moltissimi casi d'uso. Componente che rappresenta il cuore dell'Elastic Stack. Mantiene e indicizza i  dati per ricerche veloci e precise.
+    In Security Onion riceve i log e ne effettua il parsing prima di memorizzarli e indicizzarli;
     \item [Logstash] Motore di data processing server-side basato su pipeline, capace di raccogliere dati da moltitudine di sorgenti, trasformali e inoltrarli.
-    In Security Onion trasporta i log, su cui non è ancora stato effettuato parsing,  a Elastic Search.
-    \item [Kibana] Interfaccia GUI  che permette di visualizzare i dati memorizzati in Elastic Search e di navigare l'Elastic Stack. Permette di visualizzare in tempo reale flussi di dati di notevoli dimensioni e di aumentarne la comprensione attraverso grafici.
+    In Security Onion trasporta i log, su cui non è ancora stato effettuato parsing,  a Elastic Search;
+    \item [Kibana] Interfaccia GUI  che permette di visualizzare i dati memorizzati in Elastic Search e di navigare l'Elastic Stack. Permette di visualizzare in tempo reale flussi di dati di notevoli dimensioni e di aumentarne la comprensione attraverso grafici;
 \end{description}
 
 L'ELK stack si evolse nell'Elastic Stack in seguito all'aggiunta di Beats alla collezione.
@@ -742,7 +743,7 @@ Tra le sezioni built-in vi sono:
     \item[Alerts] Visualizza gli \textit{alert} che Security Onion sta generando. È possibile visualizzarne i dettagli e i PCAP a cui sono associati o aggiungere l'alert a dei Case;
     \item[Dashboard] Permette di avere un overview generale del sistema. Personalizzabile all'occorrenza;
     \item[Hunt] Simile alla Dashboard ma più mirata alla ricerca di minacce;
-    \item[Case] Interfaccia per gestire i Case. Attraverso i Case è possibile raggruppare più alert che si ritengono essere associati per studiare nel dettaglio la possibile intrusione o anomalia.
+    \item[Case] Interfaccia per gestire i Case. Attraverso i Case è possibile raggruppare più alert che si ritengono essere associati per studiare nel dettaglio la possibile intrusione o anomalia;
     \item[PCAP] Permette di analizzare i PCAP raccolti con Stenographer, anche in relazione a un particolare evento;
     \item[Grid] Permette di controllare lo status dei nodi appartenenti al sistema Security Onion.
 \end{description}
@@ -753,7 +754,7 @@ Oltre alle sezioni elencate vi sono collegamenti a tool che hanno interfacce web
     \item [Playbook] Consente di creare una lista di strategie di rilevazione, dette \textit{Play}. Ogni Play è composto di obiettivo, configurazione e \textit{follow-up}. L'obiettivo è l'oggetto da rilevare (eg. un'anomalia, un'intrusione) e necessita della configurazione necessaria per poter essere rilevato. Nel caso di Security Onion le configurazioni sono basate su ElastAlert. Con follow-up si intende le azioni da eseguire per validare e/o correggere quanto accaduto. 
 
     I risultati delle Play sono disponibili nelle sezioni Haunt, Dashboard e Kibana. Quando il risultato di una Play è di gravità elevata viene anche generato un alert visualizzabile nell'apposita sezione.
-    Quando una Play viene attivata, la configurazione ElastAlert viene inserita in produzione.
+    Quando una Play viene attivata, la configurazione ElastAlert viene inserita in produzione;
     \item [ATT\&CK Navigator ] Il Navigator ATT\&CK è progettato per fornire una navigazione e un'annotazione di base delle tecniche appartenenti alla \textit{matrice MITRE ATT\&CK}\footnote{matrice standardizzata di tattiche e tecniche di minacce informatiche.} \cite{att&ck}. Può essere utilizzato  per visualizzare la  copertura difensiva, la pianificazione del  team di attacco/difesa, la frequenza delle tecniche rilevate e molto altro.
     Inoltre si integra con Playbook, permettendo di visualizzare le Play in relazione alle tecniche coperte nella matrice ATT\&CK per avere un'idea ancora più chiara della copertura difensiva \cite{att&ckNavigator}.
 \end{description}
@@ -764,9 +765,9 @@ Security Onion permette anche la raccolta di molti tipi di log generati dagli ho
 Attraverso specifiche tecnologie installate sugli host da monitorare e l'analisi dei relativi log è possibile implementare il lato HIDS di Security Onion già accennato in precedenza.
 In alternativa, si potrebbe decidere di inviare log arbitrari usando una delle seguenti tecnologie:
 \begin{description}
-    \item[Osquery] Osquery \cite{osquery} è un agent  capace di astrarre l'host, sul quale è installato, a database relazionale. L'agent può quindi essere interrogato usando sintassi SQL per avere informazioni sul sistema. Questo può anche essere usato inviare i log a Security Onion.
-    \item[Wazuh] Wazuh \cite{wazuh} è un agent con capacità di HIDS. Verrà approfondito meglio nella sezione inerente gli agent. Permette anche l'inoltro di log a Security Onion.
-    \item[FileBeat] Come già spiegato precedentemente, FileBeat \cite{filebeat} è in grado di fornire trasporto di log dedicato.
+    \item[Osquery] Osquery \cite{osquery} è un agent  capace di astrarre l'host, sul quale è installato, a database relazionale. L'agent può quindi essere interrogato usando sintassi SQL per avere informazioni sul sistema. Questo può anche essere usato inviare i log a Security Onion;
+    \item[Wazuh] Wazuh \cite{wazuh} è un agent con capacità di HIDS. Verrà approfondito meglio nella sezione inerente gli agent. Permette anche l'inoltro di log a Security Onion;
+    \item[FileBeat] Come già spiegato precedentemente, FileBeat \cite{filebeat} è in grado di fornire trasporto di log dedicato;
     \item [Syslog] Syslog \cite{syslog} è un protocollo di rete usato per l'invio di log semplici. Utile nel caso non sia possibile installare un agent sull'end-point.
 \end{description}
 
@@ -828,7 +829,7 @@ La memoria secondaria invece  per utilizzi generali di sistema operativo e per m
         Utilizzati & 8   & 16  & 200 \\
         \hline
     \end{tabular}
-    \caption{Requisiti minimi e risorse effettivamente assegnate al Manager Node}
+    \caption{Requisiti minimi e risorse effettivamente assegnate al Manager Node.}
     \label{tab:requisitiHw1}
 \end{table}
 
@@ -852,7 +853,7 @@ La memoria secondaria viene utilizzata per memorizzare metadati indicizzati. All
         Utilizzati & 8   & 16  & 200 \\
         \hline
     \end{tabular}
-    \caption{Requisiti minimi e risorse effettivamente assegnate al Search Node}
+    \caption{Requisiti minimi e risorse effettivamente assegnate al Search Node.}
     \label{tab:requisitiHw2}
 \end{table}
 
@@ -865,7 +866,7 @@ Si stima che un worker Suricata o Zeek possa elaborare 200 Mbps, ciò implica ch
 
 La RAM impiegata dipende molto dai servizi attivi, dal tipo di traffico monitorato, dal traffico attuale e dall'ammontare di pacchetti scartati che si considera accettabile. Viene principalmente utilizzata per scrivere cache e processare il traffico di rete.
 
-La memoria secondaria dipende da quanti dati si vogliono mantenere memorizzati per analisi future e dal periodo di retention\footnote{specifica dopo quanto tempo i dati verranno cancellati} ritenuto opportuno.
+La memoria secondaria dipende da quanti dati si vogliono mantenere memorizzati per analisi future e dal periodo di retention\footnote{specifica dopo quanto tempo i dati verranno cancellati.} ritenuto opportuno.
 Se ad esempio si volesse mantenere il traffico di rete di un'intera giornata di monitoraggio, supponendo che il traffico di rete ricevuto abbia una media di 1 Gbps, allora sarebbero necessari circa 11 TB di spazio di archiviazione solo per mantenere i PCAP.
 
 \begin{table}[hbtp]
@@ -879,7 +880,7 @@ Se ad esempio si volesse mantenere il traffico di rete di un'intera giornata di 
         Utilizzati & 13   & 64  & 500 \\
         \hline
     \end{tabular}
-    \caption{Requisiti minimi e risorse effettivamente assegnate al Forward Node}
+    \caption{Requisiti minimi e risorse effettivamente assegnate al Forward Node.}
     \label{tab:requisitiHw3}
 \end{table}
 
@@ -890,12 +891,12 @@ Il primo passo di deploy dell'IDS all'interno dell'infrastruttura di testing è 
 
 In seguito è stato installato il Search Node all'interno di un'altra VM. Questa ha una sola interfaccia di rete collegata alla stessa Vlan del Manager Node. Il nodo di ricerca è stato quindi collegato al Manager.
 
-Infine è stata creata un'ulteriore VM in cui è stato installato il Forward Node. Questa ha due interfacce di rete. Una collegata alla stessa rete del Manager Node, mentre l'altra è collegata alla Botnet Vlan di cui si vuole monitorare il traffico di rete. In particolare quest'ultima deve essere in modalità promiscua\footnote{in modalità promiscua l'interfaccia di rete lascia passare anche il traffico non rivolto all'interfaccia stessa, verso la cpu}.
+Infine è stata creata un'ulteriore VM in cui è stato installato il Forward Node. Questa ha due interfacce di rete. Una collegata alla stessa rete del Manager Node, mentre l'altra è collegata alla botnet Vlan di cui si vuole monitorare il traffico di rete. In particolare quest'ultima deve essere in modalità promiscua\footnote{in modalità promiscua l'interfaccia di rete lascia passare anche il traffico non rivolto all'interfaccia stessa, verso la cpu.}.
 In una situazione normale sarebbe necessario duplicare il traffico di rete attraverso TAP o SPAN e inviarne una copia all'interfaccia del Forward Node per poterlo analizzare, ma in questo caso particolare non è necessario. Infatti grazie al network virtualizzato del server ESXi basta impostare il virtual switch in modalità promiscua e tutto il traffico di rete sarà catturabile.
 
 Una volta terminata l'installazione sono state aggiunte regole al Firewall integrato di Security Onion per poter accedere all'interfaccia web del Manager Node. 
 Una volta impostato l'indirizzo di rete da monitorare è stato accertato che i servizi funzionassero correttamente.
-In particolare sono state attivate tutte le regole built-in di Suricata e sono stati effettuati dei semplici test di scansione con Nmap\footnote{software utilizzato per eseguire scansioni di rete} \cite{nmap}  per verifica che le scansioni venissero effettivamente  rilevate.
+In particolare sono state attivate tutte le regole built-in di Suricata e sono stati effettuati dei semplici test di scansione con Nmap\footnote{software utilizzato per eseguire scansioni di rete.} \cite{nmap}  per verifica che le scansioni venissero effettivamente  rilevate.
 
 %sistemare grafica e aggiungere tabelle con requisiti minimi e adoperati per ogni nodo.
 
@@ -923,7 +924,7 @@ I messaggi tra Master e Minion avvengono attraverso \textit{ZeroMQ message bus} 
 Salt è basato su agent installati sui  minion ma è anche possibile gestire i nodi attraverso SSH senza dover installare necessariamente un agent apposito (agentless system).
 
 Il framework è scritto in Python ma il sistema di management delle configurazioni è di fatto language-agnostic, ovvero aperto a qualsiasi tipo di linguaggio.
-Di default usa YAML\footnote{linguaggio per serializzazione di dati in maniera comprensibile all'utente, utilizzato spesso per file di configurazione}   \cite{yaml} e Jinja\footnote{template engine} \cite{jinja} template per le configurazioni.
+Di default usa YAML\footnote{linguaggio per serializzazione di dati in maniera comprensibile all'utente, utilizzato spesso per file di configurazione.}   \cite{yaml} e Jinja\footnote{template engine.} \cite{jinja} template per le configurazioni.
 
 Tra le feature offerte da Salt vi sono anche:
 \begin{description}
@@ -946,7 +947,7 @@ Quando un Minion termina l'esecuzione di un job, invia dati in risposta al Maste
 Il Message Bus usa ZeroMQ per creare una topologia di rete asincrona per la comunicazione più veloce possibile.
 In particolare usa due canali:
 \begin{description}
-    \item [Pub Channel] Canale usato da master per inviare job a minion. Basato su paradigma pub/sub.
+    \item [Pub Channel] Canale usato da master per inviare job a minion. Basato su paradigma pub/sub;
     \item [Req Channel] Canale usato da minion per inviare dati a master. Usato principalmente per eseguire \textit{fetch} di file e inviare risultati di job.
 \end{description}
 
@@ -1042,19 +1043,19 @@ Ossim viene integrato con Open Threat Exchange (OTX), una piattaforma in cui ute
 
 Ossim è costituito di tre elementi:
 \begin{description}
-    \item [Sensore] Primo device ad avere un contatto con i log. Raccoglie log e informazioni che riceve e lì converte in eventi per poi inviarli a Server.
-    \item [Server] Processa eventi ricevuti da sensore ed esegue operazioni come correlazione di eventi, pattern recognition e calcolo del rischio. Inoltre esegue anche controlli sfruttando informazioni di OTX.
+    \item [Sensore] Primo device ad avere un contatto con i log. Raccoglie log e informazioni che riceve e lì converte in eventi per poi inviarli a Server;
+    \item [Server] Processa eventi ricevuti da sensore ed esegue operazioni come correlazione di eventi, pattern recognition e calcolo del rischio. Inoltre esegue anche controlli sfruttando informazioni di OTX;
     \item [Logger] Nodo sul quale vengono memorizzati i log. Comprime, firma e memorizza informazioni in accordo alle retention policy.
 \end{description}
 
 Ossim è incentrato sul concetto di Asset. Un Asset è un qualsiasi elemento dotato di indirizzo IP.
 Ogni Asset aggiunto deve passare attraverso i seguenti moduli per poter avere il massimo livello di accuratezza di output da Ossim:
 \begin{description}
-    \item [Asset Discovery] Modulo che identifica Asset e porte note. Cerca inoltre di mantenere un inventario degli Asset identificati.
-    \item [Vulnerability Assessment] Identifica vulnerabilità in Asset attraverso scansioni. Le scansioni possono essere più approfondite attraverso autenticazione.
-    \item [Intrusion Detection] Costituito da NIDS, HIDS e File Integrity Monitor (FIM). Utilizza tool come Snort per identificare intrusioni in  traffico di rete in generale e Suricata per intrusioni su traffico web based. 
+    \item [Asset Discovery] Modulo che identifica Asset e porte note. Cerca inoltre di mantenere un inventario degli Asset identificati;
+    \item [Vulnerability Assessment] Identifica vulnerabilità in Asset attraverso scansioni. Le scansioni possono essere più approfondite attraverso autenticazione;
+    \item [Intrusion Detection] Costituito da NIDS, HIDS e File Integrity Monitor (FIM). Utilizza tool come Snort per identificare intrusioni in  traffico di rete in generale e Suricata per intrusioni su traffico web based;
     \item [Behavioral Monitoring] Modulo in cui vengono analizzate le anomalie di rete. Utilizza modulo Netflow per identificare cause di spikes di rete, propagazione di malware, etc.
-    Possiede anche capacità di monitoraggio dell'availability di host e servizi.
+    Possiede anche capacità di monitoraggio dell'availability di host e servizi;
     \item [Security Intelligence] Modulo in cui processamento/computazione di eventi è eseguito. Tutte le info prese da moduli precedenti vengono analizzate al suo interno per creare report. 
 \end{description}
 
@@ -1067,9 +1068,10 @@ Ossim è stato utilizzato come IDS da affiancare a Security Onion. È stato util
 
 Per semplicità ne è stato eseguito il deploy in formato stand-alone, ovvero con tutti e tre gli elementi che lo compongono in stesso host.
 
-La macchina virtuale sul quale è stato installato OSSIM ha due interfacce di rete: \begin{itemize}
-    \item  NIC di management collegata alla Vlan con accesso a Internet per potersi interfacciare con la web Gui.
-    \item  NIC collegata alla Botnet Vlan in modalità promiscua, necessaria per sniffare il traffico di rete.
+La macchina virtuale sul quale è stato installato OSSIM ha due interfacce di rete:
+\begin{itemize}
+    \item  NIC di management collegata alla Vlan con accesso a Internet per potersi interfacciare con la web Gui;
+    \item  NIC collegata alla botnet Vlan in modalità promiscua, necessaria per sniffare il traffico di rete.
 \end{itemize} 
 
 I requisiti Hardware richiesti  e soddisfati per gestire dai 1000 ai 2000  eventi al secondo sono i seguenti:
@@ -1084,7 +1086,7 @@ I requisiti Hardware richiesti  e soddisfati per gestire dai 1000 ai 2000  event
         Utilizzati &  8  & 24 & 500 \\
         \hline
     \end{tabular}
-    \caption{Requisiti minimi e risorse effettivamente assegnate ad Ossim}
+    \caption{Requisiti minimi e risorse effettivamente assegnate ad Ossim.}
     \label{tab:requisitiHw4}
 \end{table}
 
@@ -1096,7 +1098,7 @@ I requisiti Hardware richiesti  e soddisfati per gestire dai 1000 ai 2000  event
 %rilevamento con ids
     
 
-Byob \cite{byob} è una Botnet open source scritta in Python, creata appositamente per scopi educativi e di testing.
+Byob \cite{byob} è una botnet open source scritta in Python, creata appositamente per scopi educativi e di testing.
 Si compone di quattro categorie di moduli principali:
 \begin{itemize}
     \item Server Module;
@@ -1105,11 +1107,11 @@ Si compone di quattro categorie di moduli principali:
     \item Core Modules.
 \end{itemize}
 
-I moduli Core racchiudono le funzionalità principali di Byob e sono utilizzate all'interno del Client Module e del Server Module.  
+I moduli Core racchiudono le funzionalità principali di Byob e sono utilizzate all'interno del client module e del server module.  
 
-Il modulo Server viene utilizzato per inizializzare il C\&C Server. Utilizza Flask \cite{flask} come framework per le funzionalità di web server e  dispone di un database Sqlite \cite{sqlite} per mantenere i dati e le sessioni dei bot anche a distanza di tempo e in presenza di disconnessioni. Offre controllo sui bot attraverso console collegata via \textit{reverse-shell}\footnote{shell remota a cui viene reindirizzato input e output verso host che vuole accedervi} o attraverso interfaccia web dedicata. Basato su topologia centralizzata con paradigma push-based (il server invia i comandi ai bot).
+Il modulo server viene utilizzato per inizializzare il C\&C server. Utilizza Flask \cite{flask} come framework per le funzionalità di web server e  dispone di un database Sqlite \cite{sqlite} per mantenere i dati e le sessioni dei bot anche a distanza di tempo e in presenza di disconnessioni. Offre controllo sui bot attraverso console collegata via \textit{reverse-shell}\footnote{shell remota a cui viene reindirizzato input e output verso host che vuole accedervi.} o attraverso interfaccia web dedicata. Basato su topologia centralizzata con paradigma push-based (il server invia i comandi ai bot).
 
-Il modulo Client è utilizzato per creare i payload che verranno utilizzato per generare i bot. In particolare il payload è un multi-stage installer che verrà analizzato meglio nel dettaglio.  Il bot così generato sarà in grado di importare moduli necessari e arbitrari direttamente dal server e di caricarli in memoria, non lasciando così traccie su disco. Questo meccanismo permette al bot di non avere dipendenze pregresse se non avere Python installato. Tuttavia per ovviare anche a questa dipendenza è possibile creare eseguibili che includano all'interno, oltre al payload, un interprete Python stand-alone, così che neanche Python risulti più una dipendenza.  Il payload può anche essere opzionalmente criptato e opzionalmente può abortire l'esecuzione se rileva che il sistema sul quale sta eseguendo è una macchina virtuale.
+Il modulo client è utilizzato per creare i payload che verranno utilizzato per generare i bot. In particolare il payload è un multi-stage installer che verrà analizzato meglio nel dettaglio.  Il bot così generato sarà in grado di importare moduli necessari e arbitrari direttamente dal server e di caricarli in memoria, non lasciando così traccie su disco. Questo meccanismo permette al bot di non avere dipendenze pregresse se non avere Python installato. Tuttavia per ovviare anche a questa dipendenza è possibile creare eseguibili che includano all'interno, oltre al payload, un interprete Python stand-alone, così che neanche Python risulti più una dipendenza.  Il payload può anche essere opzionalmente criptato e opzionalmente può abortire l'esecuzione se rileva che il sistema sul quale sta eseguendo è una macchina virtuale.
 
 I moduli post-exploitation sono moduli built-in che possono essere importati ed eseguiti su bot e offrono funzionalità operative molto interessanti.
 Tra questi possiamo trovare:
@@ -1123,7 +1125,7 @@ Tra questi possiamo trovare:
     \item [Screenshot] Cattura immagine del monitor;
     \item [Outlook] Utilizza Outlook client per leggere/scrivere email;
     \item [Process Control] Per elencare/ricercare/terminare processi;
-    \item [iCloud] Cerca account autenticati a iCLoud su macOS
+    \item [iCloud] Cerca account autenticati a iCLoud su macOS;
     \item [Miner] Utilizza un miner per minare criptovalute;
 \end{description}
 
@@ -1147,7 +1149,7 @@ Oltre a questi moduli built-in, il bot può anche importare moduli creati ad-hoc
         \caption{}
         \label{fig:byobshell}
     \end{subfigure}
-    \caption{(a) Home page; (b) Pagina shell;}
+    \caption{(a) Home page; (b) Pagina shell.}
     \label{ciao1}
 \end{figure}
 
@@ -1178,19 +1180,19 @@ In \Cref{fig:byobpayloads} si può osservare la schermata di creazione dei paylo
 Byob può essere anche eseguito nella sua variante minimale da console (\Cref{fig:byobconsole}).
 
 
-Attraverso il pannello di controllo o le console è possibile controllare i bot ed eseguire le classiche funzionalità RAT o eseguire moduli Python arbitrari, rendendo di fatto possibile eseguire qualsiasi operazione\footnote{per alcune operazioni può essere necessaria l'autenticazione come amministratore} sulle macchine vittime.
+Attraverso il pannello di controllo o le console è possibile controllare i bot ed eseguire le classiche funzionalità RAT o eseguire moduli Python arbitrari, rendendo di fatto possibile eseguire qualsiasi operazione\footnote{per alcune operazioni può essere necessaria l'autenticazione come amministratore.} sulle macchine vittime.
 
 
 \section{Dettagli implementativi}
-Nella seguente sezione verranno descritti più nel dettaglio i principali componenti su cui è basata la Botnet.
+Nella seguente sezione verranno descritti più nel dettaglio i principali componenti su cui è basata la botnet.
 
 \subsection{Server}
 Lo script \textit{Server.py} è il responsabile dell'esecuzione del server e di tutte le sue funzionalità. In \Cref{fig:byobumlserver} si può vedere un diagramma di sequenza che ne descrive il comportamento.
 
 Al momento dell'esecuzione crea tre sottoprocessi che eseguiranno in background:
 \begin{description}
-    \item[Packages handler] Mantiene un server HTTP su porta dedicata incaricato di fornire i Python Package richiesti da bot.
-    \item[Module handler] Mantiene un server HTTP su porta dedicata incaricato di fornire Moduli Python richiesti da bot.
+    \item[Packages handler] Mantiene un server HTTP su porta dedicata incaricato di fornire i Python Package richiesti da bot;
+    \item[Module handler] Mantiene un server HTTP su porta dedicata incaricato di fornire Moduli Python richiesti da bot;
     \item[Request handler] Gestisce le richieste POST di upload  inviate da bot, salvando i file in apposite directory.
 \end{description}
 Successivamente, esegue il C\&C server su un'altra porta dedicata.
@@ -1231,7 +1233,7 @@ Lo Stager, a sua volta, scarica il Payload dal server.  Di default il server inv
 
 Il Payload è il cuore del malware.
 
-Una volta eseguito instaura una connessione col Server e inizializza due thread, incaricati di ricercare e importare  moduli e package da remoto, per poi entrare in un loop in attesa di task da eseguire.
+Una volta eseguito instaura una connessione col server e inizializza due thread, incaricati di ricercare e importare  moduli e package da remoto, per poi entrare in un loop in attesa di task da eseguire.
 
 Alla ricezione di un task,  esegue il parsing e ne esegue comando, cui  risultato viene incapsulato e inoltrato al server.
 Nel caso il server operi  senza interfaccia web, viene eseguito un thread incaricato di eseguire polling verso il server, a cui il server occasionalmente risponderà con un task.
@@ -1248,11 +1250,11 @@ Byob sfrutta questo meccanismo. Quando esegue l'import manuale di un modulo remo
 Quando il bot è incaricato di eseguire l'upload di un file verso il server, invia una richiesta POST al sottoprocesso del server, incaricato di gestire le richieste POST, sulla porta dedicata.
 
 \section{Testing e debug}
-Per eseguire il testing, il Server è stato containerizzato con Docker.
+Per eseguire il testing, il server è stato containerizzato con Docker.
 Il build dell'immagine è stato eseguito attraverso il seguente Dockerfile:
 \lstset{  basicstyle=\footnotesize,
 frame=single}
-\begin{lstlisting}[caption={Byob Server Dockerfile},label={listing-byobdocker},frame=single]
+\begin{lstlisting}[caption={Byob server Dockerfile.},label={listing-byobdocker},frame=single]
 FROM ubuntu:bionic
 
 WORKDIR /app
@@ -1271,9 +1273,9 @@ RUN python3.6 -m pip install pip --upgrade && \
 EXPOSE 5000 1337 1338 1339
 ENTRYPOINT python3.6 run.py --debug
 \end{lstlisting}
-Il Dockerfile specifica che al momento del build deve essere copiato il sorgente del Server all'interno del container, che devono essere installate tutte le dipendenze necessarie e che devono essere esposte le porte 5000, 1337, 1338, 1339 del Container.
+Il Dockerfile specifica che al momento del build deve essere copiato il sorgente del server all'interno del container, che devono essere installate tutte le dipendenze necessarie e che devono essere esposte le porte 5000, 1337, 1338, 1339 del Container.
 Per eseguire  il container contenente il server è stato utilizzato  il seguente \textit{bash} script:
-\begin{lstlisting}{caption={Bash script per eseguire Byob in Docker Container},label={listing-byobscript1}}
+\begin{lstlisting}{caption={Bash script per eseguire Byob in Docker Container.},label={listing-byobscript1}}
 containers=`docker ps -a | grep -A 1 byob | cut -b -12`;
 for x in $containers; do 
     docker stop $x && docker rm $x ;
@@ -1288,10 +1290,10 @@ Purtroppo il software ha presentato diversi problemi e bug da risolvere nella su
 La funzionalità di import dei   package da remoto risulta rotta. In particolare la ricerca confonde i moduli con i package,  non riuscendo quindi mai a trovare ciò che si desidera poi importare. Il problema è stato aggirato ma non risolto, evitando di perdere troppo tempo su questioni secondarie, importando manualmente da locale i package necessari.
 
 I moduli di post-exploitation sono compatibili solo con alcuni degli OS e la maggior parte risultava non funzionante. 
-La Botnet è stata testata sia con bot Windows che con bot Linux.
+La botnet è stata testata sia con bot Windows che con bot Linux.
 Tra i moduli  testati e non funzionanti vi sono i moduli per eseguire screenshot, keylogging, cattura del traffico di rete e uso della  Webcam.
 
-Analizzando il modulo Keylogger si può notare che il modulo risulta scritto in modo errato, forse perché utilizza una versione deprecata di API della libreria che sfruttava per eseguire il suo compito. 
+Analizzando il modulo Keylogger si è potuto notare che il modulo risulta scritto in modo errato, forse perché utilizza una versione deprecata di API della libreria che sfruttava per eseguire il suo compito. 
 
 Tra i moduli che invece risultano funzionanti vi erano quello utilizzato per eseguire scansioni delle porte di rete e quello per la gestione dei processi.
 
@@ -1305,9 +1307,9 @@ Le funzionalità di geolocalizzazione, l'import di script di Google Analytics e 
 
 
 
-A seguito di una fase di risoluzione dei problemi che ha richiesto un considerevole impiego di tempo, si è ritenuto opportuno procedere alla verifica con IDS delle sole funzionalità che al momento risultavano operative, per poi procedere con lo studio di un'ulteriore Botnet.
+A seguito di una fase di risoluzione dei problemi che ha richiesto un considerevole impiego di tempo, si è ritenuto opportuno procedere alla verifica con IDS delle sole funzionalità che al momento risultavano operative, per poi procedere con lo studio di un'ulteriore botnet.
 
-\chapter{Rilevazioni con IDS}
+\section{Rilevazioni con IDS}
 
 
 In \Cref{fig:byob-result-1} si possono vedere gli eventi generati da Security Onion attraverso il modulo Suricata al momento dell'esecuzione del Payload. Gli eventi sono autoesplicativi e fanno riferimento in particolare a:
@@ -1334,24 +1336,32 @@ Le funzionalità di RAT attraverso reverse-shell e l'utilizzo di moduli Python g
 Questo perché  Suricata non ha fingerprint che facciano riferimento ai moduli da noi creati, mentre i comandi inoltrati attraverso reverse-shell sono criptati con AES-256 e non vi è modo di identificare quel traffico di rete come maligno sfruttando solo SIDS.
 %inserire test con import di miner che strelka dovrebbe rilevare specificando che import non è criptato e quindi può leggere.
 
+Seppure il modulo di mining non sia stato testato a pieno, in quanto richiedeva interazioni con la rete Internet, al momento dell'esecuzione il download dell'eseguibile di un noto malware dal C\&C. Essendo un malware noto, di cui esistono fingerprint in database pubblici, Strelka è stato in grado di identificarlo come si può osservare da una sezione del log riportato in \Cref{fig:byob-results-4}.
+
 
 \begin{figure}[hbtp]
     \centering
     \begin{subfigure}{\textwidth}
         \centering
         \includegraphics[width=\textwidth]{res/fig/byob-result-2.png}
-        \caption{Security Onion}
+        \caption{Security Onion.}
         \label{fig:byob-result-2}
     \end{subfigure}
     \hfill
     \begin{subfigure}{\textwidth}
         \centering
         \includegraphics[width=\textwidth]{res/fig/byob-result-3.png}
-        \caption{Ossim}
+        \caption{Ossim.}
         \label{fig:byob-result-3}
     \end{subfigure}
     \caption{Rilevazioni della scansione di rete eseguita da bot attraverso modulo apposito.}
     \label{fig:byob-results-2-3}
+\end{figure}
+\begin{figure}[hbtp]
+    \centering
+    \includegraphics[width=\textwidth]{res/fig/byob-strelka.png}
+    \caption{Rilevazione di import di malware noto.}
+    \label{fig:byob-results-4}
 \end{figure}
 
 
@@ -1381,7 +1391,7 @@ La tecnologia degli agenti mobili può potenzialmente superare alcune limitazion
     \item[Ridurre il carico di rete] Piuttosto che trasferire i dati attraverso la rete per eseguire computazioni su questi, gli agenti mobili possono essere inviati direttamente alla macchina in cui risiedono i dati, portando il la computazione vicino ai dati invece di dover spostare i dati  verso la computazione. Ciò consente di ridurre il carico sulla rete;%Inoltre, in caso la confidenzialità sia una necessità, spostare un agente crittografato e i suoi dati elaborati può risultare più efficiente rispetto al trasferimento di tutti i dati grezzi in forma crittografata.
     \item [Esecuzione autonoma e distribuita] Per grandi sistemi distribuiti, è essenziale la capacità del sistema di continuare a funzionare quando parti di esso vengono distrutte o vengono isolate. Gli agenti mobili possono esistere e funzionare in modo indipendente dalla piattaforma di creazione, rendendoli utili come componenti di IDS, poiché gli agenti che sopravvivono a un attacco potrebbero essere in grado di ricostituire le componenti danneggiate (ad esempio, clonandole) e ripristinare la funzionalità;
     \item [Adattamento dinamico] I sistemi di agenti mobili sono in grado di rilevare il proprio ambiente e adattarsi ai cambiamenti, rendendoli particolarmente utili nella rilevazione delle intrusioni. Gli agenti possono muoversi in modo autonomo per migliorare la loro posizione o evitare situazioni pericolose, clonarsi per garantire la ridondanza e l'esecuzione parallela, o unirsi ad altri agenti per ottenere assistenza. Inoltre, possono adattarsi in modo flessibile a situazioni sfavorevoli o favorevoli. Grazie alla loro esecuzione autonoma e asincrona, queste caratteristiche consentono di costruire sistemi robusti e in grado di tollerare i guasti;
-    \item [Indipendenza dalla piattaforma]  I sistemi di agenti forniscono un ambiente di calcolo astratto per gli agenti, indipendente dall'hardware e dal software del computer su cui viene eseguito. Queste caratteristiche rendono questo ambiente un'opzione adatta per le applicazioni di gestione di rete in generale e di rilevazione delle intrusioni in particolare, permettendo agli agenti di muoversi relativamente liberamente all'interno di un dominio. Questo è particolarmente vantaggioso per i meccanismi di risposta, poiché quando viene rilevata un'intrusione, i rimedi possono essere applicati o avviati da quasi qualsiasi punto della rete. Inoltre, i meccanismi di rilevamento beneficiano della mobilità diffusa degli agenti, che ha il potenziale di acquisire e unire facilmente dati da diverse fonti di rete.
+    \item [Indipendenza dalla piattaforma]  I sistemi di agenti forniscono un ambiente di calcolo astratto per gli agenti, indipendente dall'hardware e dal software del computer su cui viene eseguito. Queste caratteristiche rendono questo ambiente un'opzione adatta per le applicazioni di gestione di rete in generale e di rilevazione delle intrusioni in particolare, permettendo agli agenti di muoversi relativamente liberamente all'interno di un dominio. Questo è particolarmente vantaggioso per i meccanismi di risposta, poiché quando viene rilevata un'intrusione, i rimedi possono essere applicati o avviati da quasi qualsiasi punto della rete. Inoltre, i meccanismi di rilevamento beneficiano della mobilità diffusa degli agenti, che ha il potenziale di acquisire e unire facilmente dati da diverse fonti di rete;
     \item [Software upgrade] Per aggiornare il software su più host, di solito l'amministratore deve fermare il server, disinstallare la vecchia versione del software e reinstallare la nuova versione. Ciò comporta la necessità di fermare l'intero sistema software. Tuttavia, se ogni componente del software è gestito da un agente, è possibile semplicemente disabilitare l'agente vecchio e distribuire un nuovo agente con le funzionalità richieste, senza interrompere l'intero sistema. Questo approccio consente di fermare solo il componente basato su agente che necessita di aggiornamento, evitando di fermare l'intero sistema.
 \end{description}
 
@@ -1400,10 +1410,10 @@ Il maggior potenziale dei mobile agent risiede nella risposta a un'incursione pi
 
 Alcuni dei vantaggi nell'implementare un mobile agent per rispondere a intrusioni possono essere:
 \begin{description}
-    \item [Tracciatura di un attaccante] Gli attaccanti spesso si insinuano all'interno di una catena di molti host prima di attaccare l'obiettivo e generalmente falsificano l'indirizzo di origine. Per trovare l'attaccante l'IDS deve ispezionare la catena di host per trovare il responsabile dell'inoltro dei pacchetti considerati come maligni. Per eseguire una tale traccia l'IDS deve essere in grado di analizzare il traffico di rete di ogni segmento di rete e ogni host. In genere tale compito sarebbe troppo dispendioso ma è realizzabile  con una base di agent abbastanza ampia.
-    \item [Risposta in host target] Quando un attacco viene rilevato è importante poter rispondere alla minaccia all'interno dell'host colpito. Ciò è effettuabile attraverso gli agent.
-    \item [Risposta in sorgente di attacco] Una possibile riformulazione più fluida potrebbe essere: "Per limitare le azioni dell'attaccante, l'IDS può agire direttamente sul suo host, ma ciò richiede l'uso di agenti mobili, altrimenti l'accesso sarebbe limitato. Nonostante questa opzione abbia delle restrizioni, come la necessità che l'attacco provenga dall'interno del dominio di gestione, può comunque essere un'arma molto efficace per l'IDS.
-    \item [Raccolta di evidenze] Al momento, è difficile raccogliere automaticamente prove di attacchi provenienti da molteplici fonti. Ciò è dovuto alla necessità di avere il software adatto eseguito nel luogo e nel momento giusto. Tuttavia, gli agenti mobili possono essere utilizzati per eseguire qualsiasi cosa in qualsiasi momento e ovunque, rendendo possibile la raccolta di prove da diverse piattaforme hardware, sistemi operativi e persino applicazioni come i server web. 
+    \item [Tracciatura di un attaccante] Gli attaccanti spesso si insinuano all'interno di una catena di molti host prima di attaccare l'obiettivo e generalmente falsificano l'indirizzo di origine. Per trovare l'attaccante l'IDS deve ispezionare la catena di host per trovare il responsabile dell'inoltro dei pacchetti considerati come maligni. Per eseguire una tale traccia l'IDS deve essere in grado di analizzare il traffico di rete di ogni segmento di rete e ogni host. In genere tale compito sarebbe troppo dispendioso ma è realizzabile  con una base di agent abbastanza ampia;
+    \item [Risposta in host target] Quando un attacco viene rilevato è importante poter rispondere alla minaccia all'interno dell'host colpito. Ciò è effettuabile attraverso gli agent;
+    \item [Risposta in sorgente di attacco] Una possibile riformulazione più fluida potrebbe essere: "Per limitare le azioni dell'attaccante, l'IDS può agire direttamente sul suo host, ma ciò richiede l'uso di agenti mobili, altrimenti l'accesso sarebbe limitato. Nonostante questa opzione abbia delle restrizioni, come la necessità che l'attacco provenga dall'interno del dominio di gestione, può comunque essere un'arma molto efficace per l'IDS;
+    \item [Raccolta di evidenze] Al momento, è difficile raccogliere automaticamente prove di attacchi provenienti da molteplici fonti. Ciò è dovuto alla necessità di avere il software adatto eseguito nel luogo e nel momento giusto. Tuttavia, gli agenti mobili possono essere utilizzati per eseguire qualsiasi cosa in qualsiasi momento e ovunque, rendendo possibile la raccolta di prove da diverse piattaforme hardware, sistemi operativi e persino applicazioni come i server web;
     \item[Isolamento di target e attaccante] Poiché le azioni per rispondere automaticamente al bersaglio e alla fonte possono fallire, è necessaria  una risposta a livello di rete per limitare le azioni di un attaccante. Ci sono tre strategie generali: bloccare le comunicazioni del bersaglio, bloccare le comunicazioni dell'attaccante e bloccare le comunicazioni tra il bersaglio e l'attaccante. Grazie alla loro capacità di viaggiare in tutti gli elementi della rete per eseguire azioni correttive, gli agenti mobili sono in grado di attuare tali strategie.
 \end{description}
 
@@ -1449,8 +1459,8 @@ Il sistema è composto da un server di management e da uno o più agent installa
 Wazuh è composto dei seguenti componenti:
 \begin{description}
     \item [Indexer] Mantiene memorizzati e indicizzati gli \textit{alert} generati;
-    \item [Server] Analizza i dati ricevuti dagli agent. Un singolo server può analizzare dati provenienti da decine di migliaia di agenti e scalare orizzontalmente all'occorrenza attraverso \textit{clustering}.
-    \item [Dashboard] Interfaccia web utilizzata per visualizzare e analizzare dati.  Può essere utilizzata anche per il management di configurazioni.
+    \item [Server] Analizza i dati ricevuti dagli agent. Un singolo server può analizzare dati provenienti da decine di migliaia di agenti e scalare orizzontalmente all'occorrenza attraverso \textit{clustering};
+    \item [Dashboard] Interfaccia web utilizzata per visualizzare e analizzare dati.  Può essere utilizzata anche per il management di configurazioni;
     \item [Agent] Installati sui server da monitorare, sono statici ed eseguono operazioni o inviano dati  al server.
     L'agente è composto da un demone e da più moduli operativi. Il processo demone si occupa della crittografia e dell'autenticazione necessarie per la comunicazione con il server, nonché dell'applicazione delle configurazioni remote e dell'esecuzione dei moduli. I moduli operativi svolgono le attività assegnate all'agente per il monitoraggio e la protezione della macchina su cui è installato.
 \end{description}
@@ -1467,13 +1477,13 @@ Wazuh è anche fornito di un API RESTful utilizzabile per visualizzare e modific
 
 Alcune delle capacità principali di Wazuh sono:
 \begin{description}
-    \item [Intrusion detection]  Gli agent effettuano una scansione dei sistemi monitorati alla ricerca di malware, rootkit e anomalie sospette, possono  individuare file nascosti, processi nascosti e ascoltatori di rete non legittimi, così come incongruenze nelle risposte alle chiamate di sistema. Oltre alle capacità degli agenti, il componente server utilizza un metodo di rilevamento delle intrusioni signature-based per identificare fattori di compromissione all'interno dei log analizzati.
-    \item [Analisi dei log] Gli agent sono in grado di leggere i log di applicazioni e del sistema monitorato, per poi inoltrarli in modo sicuro verso il server incaricato di analizzarli attraverso meccanismi basati su regole. Il server può ricevere log anche da dispositivi che non sono in grado di ospitare un agente, attraverso l'inoltro via Syslog. Attraverso le regole è possibile acquisire consapevolezza di errori di sistema, misconfigurazioni, attività malevole, violazioni di policy e altre problematiche a livello di sicurezza e operatività.
-    \item [File integrity monitoring] Wazuh è in grado di monitorare il file system, individuando modifiche nel contenuto, nelle autorizzazioni, nella proprietà e negli attributi dei file che richiedono un'attenzione particolare. Inoltre, è in grado di identificare automaticamente gli utenti e le applicazioni che creano o modificano i file. Questa funzionalità può essere combinata con l'analisi delle minacce per identificare eventuali attacchi o host compromessi.
-    \item [Vulnerability detection] Gli agenti possono estrapolare l'inventario dei software installati sulla macchina monitorata ed inviarlo  al server, dove viene incrociato con i database di  Common Vulnerabilities and Exposure\footnote{identificatore per una particolare vulnerabilità o falla di sicurezza} (CVE) costantemente aggiornati per identificare il software noto come vulnerabile.
-    \item [Configuration assessment] Wazuh è in grado di monitorare configurazioni di sistema o di applicazioni per assicurarsi che siano in linea con le linee guida e policy definite.
-    \item [Incident response] Permette di configurare risposte attive in caso determinati criteri sono rilevati, come bloccare l'accesso di una sorgente considerata malevola. Inoltre permette di eseguire comandi e query di sistema per eseguire attività forense o rispondere a minacce.
-    \item [Cloud security] Wazuh aiuta a monitorare le infrastrutture cloud a livello di API, utilizzando moduli di integrazione in grado di estrarre dati di sicurezza dai provider cloud più noti.
+    \item [Intrusion detection]  Gli agent effettuano una scansione dei sistemi monitorati alla ricerca di malware, rootkit\footnote{tipologia di malware capace di nascondere la sua presenza agli strumenti di sistema.} e anomalie sospette, possono  individuare file nascosti, processi nascosti e ascoltatori di rete non legittimi, così come incongruenze nelle risposte alle chiamate di sistema. Oltre alle capacità degli agenti, il componente server utilizza un metodo di rilevamento delle intrusioni signature-based per identificare fattori di compromissione all'interno dei log analizzati;
+    \item [Analisi dei log] Gli agent sono in grado di leggere i log di applicazioni e del sistema monitorato, per poi inoltrarli in modo sicuro verso il server incaricato di analizzarli attraverso meccanismi basati su regole. Il server può ricevere log anche da dispositivi che non sono in grado di ospitare un agente, attraverso l'inoltro via Syslog. Attraverso le regole è possibile acquisire consapevolezza di errori di sistema, misconfigurazioni, attività malevole, violazioni di policy e altre problematiche a livello di sicurezza e operatività;
+    \item [File integrity monitoring] Wazuh è in grado di monitorare il file system, individuando modifiche nel contenuto, nelle autorizzazioni, nella proprietà e negli attributi dei file che richiedono un'attenzione particolare. Inoltre, è in grado di identificare automaticamente gli utenti e le applicazioni che creano o modificano i file. Questa funzionalità può essere combinata con l'analisi delle minacce per identificare eventuali attacchi o host compromessi;
+    \item [Vulnerability detection] Gli agenti possono estrapolare l'inventario dei software installati sulla macchina monitorata ed inviarlo  al server, dove viene incrociato con i database di  Common Vulnerabilities and Exposure\footnote{identificatore per una particolare vulnerabilità o falla di sicurezza.} (CVE) costantemente aggiornati per identificare il software noto come vulnerabile;
+    \item [Configuration assessment] Wazuh è in grado di monitorare configurazioni di sistema o di applicazioni per assicurarsi che siano in linea con le linee guida e policy definite;
+    \item [Incident response] Permette di configurare risposte attive in caso determinati criteri sono rilevati, come bloccare l'accesso di una sorgente considerata malevola. Inoltre permette di eseguire comandi e query di sistema per eseguire attività forense o rispondere a minacce;
+    \item [Cloud security] Wazuh aiuta a monitorare le infrastrutture cloud a livello di API, utilizzando moduli di integrazione in grado di estrarre dati di sicurezza dai provider cloud più noti;
     \item [Containers security] Wazuh offre visibilità sulla sicurezza dei container Docker, monitorando il loro comportamento e rilevando minacce, vulnerabilità ed anomalie. L'agente  ha una integrazione nativa con l'engine Docker, consentendo di monitorare immagini, volumi, impostazioni di rete e container in esecuzione.
 \end{description}
 
@@ -1482,7 +1492,7 @@ Le precedenti funzionalità sono configurabili attraverso file di configurazione
 %aggiungere regola e decoder di esempio?
 
 \subsection{Deploy e configurazione}
- L'obiettivo era l'installazione di un agent all'interno di una delle due macchine adibite ad essere infettata al fine di poter studiare le tecnologie  HIDS. Dato che la prossima Botnet oggetto di studio esegue solo su Windows, l'agent verrà installato sulla macchina con OS.
+ L'obiettivo era l'installazione di un agent all'interno di una delle due macchine adibite ad essere infettata al fine di poter studiare le tecnologie  HIDS. Dato che la prossima botnet oggetto di studio esegue solo su Windows, l'agent verrà installato sulla macchina con OS.
  
 Sia Security Onion che Ossim, offrono la possibilità di ricevere log inviati da agenti Wazuh  e mettono a disposizione dell'utente la possibilità di scaricare l'agent dal web server.
 
@@ -1497,13 +1507,30 @@ Per i motivi elencati quindi, è stato deciso di proseguire con il deploy di un'
 
 Come già osservato nella sezione inerente l'architettura di Wazuh, esso è composto di più componenti: Indexer, Server, Dashboard.  Dato che il deploy di Wazuh servirà solo a scopi educativi si è optato per un'architettura stand-alone, in cui tutte le componenti coesistono in stessa macchina. Per facilitare l'installazione della piattaforma HIDS, è stato utilizzato ancora una volta Docker per la containerizzazione dei servizi. In particolare è stato sfruttato il file di configurazione Docker Compose offerto da Wazuh per l'esecuzione congiunta e coordinata dei servizi necessari.
 
+\begin{table}[hbtp]
+    \centering
+    \begin{tabular}{|l|c|c|c|}
+        \hline
+        & CPU (N. core) & RAM (GB) & DISK (GB) \\
+        \hline
+        Minimi     & 4 & 8 & 50   \\
+        \hline
+        Utilizzati & 8   & 16  & 50 \\
+        \hline
+    \end{tabular}
+    \caption{Requisiti minimi e risorse effettivamente assegnate al Wazuh server.}
+    \label{tab:requisitiHwWazuh}
+\end{table}
+
+
+
 Una volta che il server è diventato operativo, si è proseguito con l'installazione dell'agent, sfruttando il relativo pacchetto d'installazione scaricabile dalla pagina web ufficiale di Wazuh.
 \medskip
 
-In seguito all'installazione dell'agente, è stato installato Sysmon cui log verranno inviati attraverso l'agent verso il server per permettere analisi più approfondite. Sysmon \cite{sysmon} (System Monitor) è un tool appartenente alla suite Sysinternals creata da Microsoft. Esso permette di monitorare e notificare al Windows Event Log System\footnote{sistema di memorizzazione e visualizzazione di log all'interno del sistema operativo Windows} attività di sistema come la creazione di processi, instaurazione di connessioni di rete, modifiche a file e molto altro. Questo è stato inizializzato con un file di configurazione \cite{sysmonconfig} che permettesse una buona base di tracciatura di eventi, in particolare legati al fattore sicurezza del sistema.
+In seguito all'installazione dell'agente, è stato installato Sysmon cui log verranno inviati attraverso l'agent verso il server per permettere analisi più approfondite. Sysmon \cite{sysmon} (System Monitor) è un tool appartenente alla suite Sysinternals creata da Microsoft. Esso permette di monitorare e notificare al Windows Event Log System\footnote{sistema di memorizzazione e visualizzazione di log all'interno del sistema operativo Windows.} attività di sistema come la creazione di processi, instaurazione di connessioni di rete, modifiche a file e molto altro. Questo è stato inizializzato con un file di configurazione \cite{sysmonconfig} che permettesse una buona base di tracciatura di eventi, in particolare legati al fattore sicurezza del sistema.
 L'agente  Wazuh è stato istruito di collezionare i log di Sysmon che venivano inseriti all'interno del registro eventi di Windows ed in seguito di inviarli al server per poter permettere un analisi più approfondita del sistema.
 Nella sezione di codice \ref{sysmonconfig1}, è possibile osservare l'aggiunta al file di configurazione Wazuh che permette all'agent di tenere traccia delle attività di Sysmon.
-\begin{lstlisting}[floatplacement=H,caption={Aggiunta al file di configurazione dell'agent},captionpos=b,label={sysmonconfig1}]{}
+\begin{lstlisting}[floatplacement=H,caption={Aggiunta al file di configurazione dell'agent.},captionpos=b,label={sysmonconfig1}]{}
     <localfile>
         <location>Microsoft_Windows_Sysmon/Operational</location>
         <lof_format>eventchannel</lof_format>
@@ -1522,14 +1549,14 @@ Nella sezione di codice \ref{sysmonconfig1}, è possibile osservare l'aggiunta a
 
 
 
-UBoat \cite{uboat} rappresenta un progetto open-source di Botnet basato su HTTP, volto a fornire una dimostrazione concreta (\textit{proof of concept}) di una classica Botnet centralizzata, con finalità prettamente educative. È scritta in linguaggio C++ senza alcuna dipendenza esterna e permette ridondanza di comunicazione col C\&C attraverso un server di \textit{fall-back}.
+UBoat \cite{uboat} rappresenta un progetto open-source di botnet basato su HTTP, volto a fornire una dimostrazione concreta (\textit{proof of concept}) di una classica botnet centralizzata, con finalità prettamente educative. È scritta in linguaggio C++ senza alcuna dipendenza esterna e permette ridondanza di comunicazione col C\&C attraverso un server di \textit{fall-back}.
 
-Tra le funzionalità operazionali built-in  di questa Botnet vi sono:
+Tra le funzionalità operazionali built-in  di questa botnet vi sono:
 \begin{itemize}
     \item Persistenza all'interno delle macchine infette per prevenire la perdita del controllo su di esse;
     \item Possibilità di DDoS basato su traffico TCP;
     \item Esecuzione di comandi e  processi da remoto;
-    \item Update della Botnet;
+    \item Update della botnet;
     \item Download ed esecuzione di altri malware;
     \item Capacità di keylogging;
     \item Estrapolazione di screenshot da macchina infetta;
@@ -1550,7 +1577,7 @@ Il server di comando mette a disposizione, previa autenticazione, un'interfaccia
         \caption{}
         \label{fig:uboat-home-2}
     \end{subfigure}
-    \caption{Visualizzazione delle informazioni dei  bot}
+    \caption{Visualizzazione delle informazioni dei  bot.}
     \label{fig:uboat-home}
 \end{figure}
 
@@ -1571,7 +1598,7 @@ Il C\&C è composto di un web server, cui tecnologia è   a discrezione dell'ute
 Mantiene le informazioni dei bot, i comandi inseriti ed altre informazioni all'interno del database. Il web server e la relativa interfaccia web sono  raggiungibili attraverso la porta 8080 dell'host che ospita il web server.
 
 Una volta che il server è operativo, aspetta che un bot si metta in contatto con esso.
-Il bot comunica con il server attraverso comandi di \textit{Join} o di \textit{Poll} attraverso richieste HTTP. Il primo viene utilizzato per iniziare la comunicazione col server. Alla ricezione del comando di Join quindi il server controlla che il bot sia presente all'interno del database e nel caso non lo fosse viene aggiunto. Il comando di Poll invece, viene utilizzato per richiedere comandi al server. Questa peculiarità  definisce la Botnet come pull-based.
+Il bot comunica con il server attraverso comandi di \textit{Join} o di \textit{Poll} attraverso richieste HTTP. Il primo viene utilizzato per iniziare la comunicazione col server. Alla ricezione del comando di Join quindi il server controlla che il bot sia presente all'interno del database e nel caso non lo fosse viene aggiunto. Il comando di Poll invece, viene utilizzato per richiedere comandi al server. Questa peculiarità  definisce la botnet come pull-based.
 Il server riceve anche comandi contenenti l'esito dei task inoltrati.
 
 
@@ -1589,7 +1616,7 @@ In seguito invia un comando di \textit{Join} al server attraverso HTTP, in cui a
 \begin{itemize}
     \item Version di Windows installata;
     \item Modello di CPU;
-    \item Versione di framework .NET\footnote{ambiente di esecuzione realtime della piattaforma .NET \cite{netframework}} installata;
+    \item Versione di framework .NET\footnote{ambiente di esecuzione realtime della piattaforma .NET \cite{netframework}.} installata;
     \item Quantità di RAM;
     \item Se l'utente ha diritti di amministratore;
     \item Identificativo Hardware (HWID) associato al dispositivo.
@@ -1620,7 +1647,7 @@ L'inoltro di un comando è preceduto da una fase di offuscamento di seguito desc
 \end{enumerate}
 
 \lstset{numbers=left,tabsize=2}
-\begin{lstlisting}[float,floatplacement=H,caption={Esempio di handler di comandi},captionpos=b,label={listing-uboat1}]{numbers=left}
+\begin{lstlisting}[float,floatplacement=H,caption={Esempio di handler di comandi.},captionpos=b,label={listing-uboat1}]{numbers=left}
 void ScreenshotParser(int commandId, int commandType, char* data)
 {
 	int len;
@@ -1651,23 +1678,23 @@ L'handler delle richieste di upload veniva eseguito dall'interno del container a
 Dopo aver configurato l'indirizzo del server  C\&C nel codice sorgente del payload e installato gli strumenti necessari, come il Software Developer Kit (SDK) e i Build Tools, il payload è stato compilato ed eseguito in Visual Studio. Questo ha permesso di utilizzare il \textit{debugger} integrato dell'IDE per analizzare il funzionamento del bot.
 
 \medskip
-Prima di procedere con il test della Botnet, sono state apportate alcune modifiche al fine di risolvere alcuni dei bug individuati, i quali verranno di seguito descritti:
+Prima di procedere con il test della botnet, sono state apportate alcune modifiche al fine di risolvere alcuni dei bug individuati, i quali verranno di seguito descritti:
 \begin{itemize}
-    \item Le richieste HTTP del server non erano indirizzate verso il corretto percorso di rete (path).
-    \item Quando il bot inviava il messaggio di Join al server, le informazioni inserite al suo interno erano posizionate in un ordine differente dall'ordine in cui venivano elaborate dal server. Il server quindi, nel procedere all'inserimento in database dei dati ricevuti, generava un'eccezione, poiché i tipi dei dati inseriti non combaciavano con i tipi dei dati della \textit{query} di inserimento.
-    \item Il percorso in cui venivano salvati i risultati del Keylogger, era formattato erroneamente.
-    \item Una delle directory in cui venivano salvate delle informazioni non era presente al momento dell'esecuzione e non avendo abbastanza permessi per crearla ne conseguiva il malfunzionamento.
-    \item L'inoltro dello screenshot è diviso in due scambi di dati tra server e bot, ma era coordinato male. In particolare vi era un problema di sincronizzazione per via della ricezione non bloccante dei messaggi.
+    \item Le richieste HTTP del server non erano indirizzate verso il corretto percorso di rete (path);
+    \item Quando il bot inviava il messaggio di Join al server, le informazioni inserite al suo interno erano posizionate in un ordine differente dall'ordine in cui venivano elaborate dal server. Il server quindi, nel procedere all'inserimento in database dei dati ricevuti, generava un'eccezione, poiché i tipi dei dati inseriti non combaciavano con i tipi dei dati della \textit{query} di inserimento;
+    \item Il percorso in cui venivano salvati i risultati del Keylogger, era formattato erroneamente;
+    \item Una delle directory in cui venivano salvate delle informazioni non era presente al momento dell'esecuzione e non avendo abbastanza permessi per crearla ne conseguiva il malfunzionamento;
+    \item L'inoltro dello screenshot è diviso in due scambi di dati tra server e bot, ma era coordinato male. In particolare vi era un problema di sincronizzazione per via della ricezione non bloccante dei messaggi;
     \item La funzionalità di persistenza, che prevede l'inserimento di un record nel registro di sistema, presentava un bug che causava l'inserimento continuo della chiave nel registro stesso.
 \end{itemize}
 
-Una volta sistemati questi bug è stato possibile testare le varie funzionalità operative della Botnet:
+Una volta sistemati questi bug è stato possibile testare le varie funzionalità operative della botnet:
 \begin{itemize}
     \item Esecuzione di processo da remoto con possibilità di aggiungere parametri. La possibilità di aggiungere parametri permette anche di eseguire script, ad esempio, eseguendo un'interprete di comandi e passandogli comandi interpretabili;
     \item Funzionalità DDoS, seppure l'implementazione non sia molto efficiente. Essa infatti consiste di un loop in cui vengono aperte connessioni TCP verso il target per inviare una serie di dati. Per provvedere alla scarsa efficienza della funzionalità built-in, è stato testato un tool di DDoS reperito in Internet, che è stato eseguito per mezzo della funzionalità di esecuzione di processi;
-    \item Keylogging, ovvero la capacità di poter estrapolare  dal bot, in forma di dati, le digitazioni da tastiera dell'utente.
-    \item Download ed esecuzione di eseguibile. Un dettaglio importante che verrà utilizzato nella fase di rilevazione, è che il bot usa l'\textit{esplora risorse} di Windows per eseguire i file scaricati.
-    \item La funzionalità di update del bot è molto simile al \textit{download and execute} già visto. Il bot esegue il download del nuovo payload, lo esegue ed in seguito termina la propria esecuzione per lasciare spazio alla versione aggiornata.
+    \item Keylogging, ovvero la capacità di poter estrapolare  dal bot, in forma di dati, le digitazioni da tastiera dell'utente;
+    \item Download ed esecuzione di eseguibile. Un dettaglio importante che verrà utilizzato nella fase di rilevazione, è che il bot usa l'\textit{esplora risorse} di Windows per eseguire i file scaricati;
+    \item La funzionalità di update del bot è molto simile al \textit{download and execute} già visto. Il bot esegue il download del nuovo payload, lo esegue ed in seguito termina la propria esecuzione per lasciare spazio alla versione aggiornata;
     \item Capacità di inviare una richiesta HTTP ad un sito web target per controllare che sia operativo. Ritorna esito positivo solo in caso la risposta HTTP abbia codice 200.
 \end{itemize}
 
@@ -1675,7 +1702,7 @@ Una volta sistemati questi bug è stato possibile testare le varie funzionalità
 
 
 
-\begin{lstlisting}[firstnumber=1,floatplacement=H,caption={File di configurazione docker compose},captionpos=b,label={listing-uboat2}]{numbers=left}
+\begin{lstlisting}[firstnumber=1,floatplacement=H,caption={File di configurazione docker compose.},captionpos=b,label={listing-uboat2}]{numbers=left}
 version: '3'
 
 services:
@@ -1744,8 +1771,8 @@ Lo scambio di comandi tra bot e server non è segnalato come malevolo in quanto 
 Un modo per poter rilevare la presenza di UBoat potrebbe essere sfruttare le capacità di LUA scripting di Suricata per deoffuscare il messaggio, in congiunta con l'inserimento di regole specifiche basate sul matching del formato dei messaggi di UBoat.
 
 \medskip
-In aggiunta alle funzionalità della Botnet è stata sfrutta la capacità di instaurare una reverse-shell sfruttando le capacità built-in, per analizzare se gli IDS l'avrebbero segnalata.
-In \Cref{fig:uboat-reverseshell1} si può osservare il comando composto\footnote{formulato per testare anche la capacità di eseguire più comandi in un solo messaggio} utilizzato per creare una reverse shell sfruttando Nmap \cite{nmap}.Il server apre una porta e rimane in ascolto mentre il bot, attraverso Nmap,  esegue un comando e ne redirige l'input e l'output verso la porta aperta del server.
+In aggiunta alle funzionalità della botnet è stata sfrutta la capacità di instaurare una reverse-shell sfruttando le capacità built-in, per analizzare se gli IDS l'avrebbero segnalata.
+In \Cref{fig:uboat-reverseshell1} si può osservare il comando composto\footnote{formulato per testare anche la capacità di eseguire più comandi in un solo messaggio.} utilizzato per creare una reverse shell sfruttando Nmap \cite{nmap}. Il server apre una porta e rimane in ascolto mentre il bot, attraverso Nmap,  esegue un comando e ne redirige l'input e l'output verso la porta aperta del server.
 
 A scopo di test, Nmap è stato installato sulla macchina vittima, in un contesto reale si potrebbe sfruttare la capacità di composizione dei comandi (osservabile in \Cref{fig:uboat-reverseshell1}) per eseguirne prima il download e poi l'esecuzione.
 
@@ -1756,14 +1783,14 @@ In \Cref{fig:uboat-reverseshell2} si può osservare il successo effettivo dell'o
     \begin{subfigure}{0.4\textwidth}
     \centering
     \includegraphics[width=\textwidth]{res/fig/reverse-shell1.png}
-    \caption{Comando per la creazione di una reverse-shell}
+    \caption{Comando per la creazione di una reverse-shell.}
     \label{fig:uboat-reverseshell1}
     \end{subfigure}
     \hfill
     \begin{subfigure}{0.4\textwidth}
     \centering
     \includegraphics[width=\textwidth]{res/fig/reverse-shell2.png}
-    \caption{Shell collegata al bot}
+    \caption{Shell collegata al bot.}
     \label{fig:uboat-reverseshell2}
     \end{subfigure}
     \caption{}
@@ -1796,8 +1823,8 @@ Attraverso l'aggiunta delle seguenti configurazioni a quelle dell'agent sulla ma
 </ossec_config>
 \end{lstlisting}
 
-Di seguito analizzeremo le regole utilizzate per identificare le varie funzionalità operative della Botnet.
-Le regole 100013 e 100014 sono utilizzate per identificare connessioni verso l'indirizzo IP della Botnet, sfruttando la lista delle connessioni aperte inviate dall'agent. Le regole 100015 e 100016 sono state realizzate per cancellare il rumore creato dall'esecuzione del comando utilizzato per identificare le connessioni di rete sulla macchina monitorata.
+Di seguito analizzeremo le regole utilizzate per identificare le varie funzionalità operative della botnet.
+Le regole 100013 e 100014 sono utilizzate per identificare connessioni verso l'indirizzo IP della botnet, sfruttando la lista delle connessioni aperte inviate dall'agent. Le regole 100015 e 100016 sono state realizzate per cancellare il rumore creato dall'esecuzione del comando utilizzato per identificare le connessioni di rete sulla macchina monitorata.
 \begin{lstlisting}
 <group name="ossec">
     <rule id="100013" level="0">
@@ -1824,7 +1851,7 @@ Le regole 100013 e 100014 sono utilizzate per identificare connessioni verso l'i
 </group>
 \end{lstlisting}
 
-La regola 100007 sfrutta la capacità di monitorare directory designate precedentemente descritta, e genera un allarme nel caso nella particolare directory sia inserito un file eseguibile denominato 'filename.exe'. In questo caso si sfrutta l'hardcoding del nome del file per identificare la Botnet.
+La regola 100007 sfrutta la capacità di monitorare directory designate precedentemente descritta, e genera un allarme nel caso nella particolare directory sia inserito un file eseguibile denominato 'filename.exe'. In questo caso si sfrutta l'hardcoding del nome del file per identificare la botnet.
 \begin{lstlisting}
 <group name="syscheck">
     <rule id="100007" level="12">
@@ -1929,26 +1956,26 @@ Concludiamo lo studio di UBoat con una carrellata delle segnalazioni effettuate 
 \begin{figure}[hbtp]
     \centering
     \includegraphics[width=\textwidth]{res/fig/uboat-result1.png}
-    \caption{Segnalazioni all'esecuzione del payload}
+    \caption{Segnalazioni all'esecuzione del payload.}
 \end{figure}
 \begin{figure}[hbtp]
     \centering
     \includegraphics[width=\textwidth]{res/fig/uboat-result2.png}
-    \caption{Segnalazioni in seguito alla funzionalità di Download and Execute}
+    \caption{Segnalazioni in seguito alla funzionalità di Download and Execute.}
 \end{figure}
 \begin{figure}[hbtp]
     \centering
     \includegraphics[width=\textwidth]{res/fig/uboat-result3.png}
-    \caption{Segnalazioni in seguito all'estrapolazione di screenshot}
+    \caption{Segnalazioni in seguito all'estrapolazione di screenshot.}
 \end{figure}
 \begin{figure}[hbtp]
     \centering
     \includegraphics[width=\textwidth]{res/fig/uboat-result4.png}
-    \caption{Segnalazioni in seguito all'attacco DoS}
+    \caption{Segnalazioni in seguito all'attacco DoS.}
 \end{figure}
 \begin{figure}[hbtp]
     \centering
     \includegraphics[width=\textwidth]{res/fig/uboat-result5.png}
-    \caption{Segnalazioni in merito l'esecuzione all'accesso dell'utente}
+    \caption{Segnalazioni in merito l'esecuzione all'accesso dell'utente.}
 \end{figure}
 
