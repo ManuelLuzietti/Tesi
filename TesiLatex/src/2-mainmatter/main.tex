@@ -133,6 +133,13 @@ La comunicazione tra C\&C server e i bot può essere organizzata da un punto di 
     \item Ibrida.
 \end{itemize}
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{res/fig/topologia.png}
+    \caption{Topologie botnet.}
+    \label{fig:topologia}
+\end{figure}
+
 \subsection{Centralizzata}
 Nella topologia centralizzata ogni bot si connette direttamente a un unico server.
 Per una topologia del genere spesso sono usati protocolli di comunicazione semplici come Internet Relay Chat (IRC) (\Cref{IRC}) o HyperText Markup Language (HTTP). Per questo motivo ne risulta anche semplificato il \textit{set-up}, dato che questi protocolli non hanno particolari esigenze da soddisfare. 
@@ -148,7 +155,7 @@ Una tecnica spesso usata per evitare l'\textit{hardcoding} degli indirizzi dei s
 
 \subsubsection{Fast-flux network}
 \label{fast-flux-network-label}
-In un Fast-flux network il servizio Domain Name System (DNS) di risoluzione degli \textit{hostname} viene usato come \textit{multiplexer} e \textit{load balancer}. La macchina infetta non comunica direttamente col server usando il suo indirizzo IP ma punterà a risolvere un hostname attraverso risoluzione DNS. Al record DNS in cui vi è registrato l'hostname da risolvere saranno associati molteplici indirizzi IP appartenenti a più bot della Botnet. Così facendo si sfrutta le capacità native di \textit{load balancing} dei server DNS per ciclare sugli indirizzi IP assegnati. I bot così associati a questo hostname sono gli unici a conoscenza dell'indirizzo IP del C\&C server e quindi sono gli unici in grado di comunicare con esso. 
+In un Fast-flux network (\Cref{fig:fast-flux}) il servizio Domain Name System (DNS) di risoluzione degli \textit{hostname} viene usato come \textit{multiplexer} e \textit{load balancer}. La macchina infetta non comunica direttamente col server usando il suo indirizzo IP ma punterà a risolvere un hostname attraverso risoluzione DNS. Al record DNS in cui vi è registrato l'hostname da risolvere saranno associati molteplici indirizzi IP appartenenti a più bot della Botnet. Così facendo si sfrutta le capacità native di \textit{load balancing} dei server DNS per ciclare sugli indirizzi IP assegnati. I bot così associati a questo hostname sono gli unici a conoscenza dell'indirizzo IP del C\&C server e quindi sono gli unici in grado di comunicare con esso. 
 Quando una macchina infetta ha necessità di comunicare con il server di controllo, risolve l'hostname associato ottenendo l'indirizzo IP di un bot che farà da proxy (reverse proxy) nella comunicazione verso il server.
 In questo modo  si sposta il singolo point of failure dal server C\&C al DNS server.
 
@@ -157,6 +164,13 @@ Per rendere più complessa la rete ed eliminare anche questo point of failure si
 Si noti che registrare ed eliminare un  record DNS sono operazioni veloci e quindi è possibile variare velocemente i bot che fungono da proxy o name server.
 
 Anche utilizzando questa tecnica rimane comunque il problema dell'hardcoding degli hostname all'interno del binario del bot. Per risolvere anche questo problema spesso  questa tecnica viene associata a \textit{Domain Generation Algorithm} (DGA) che verrà di seguito descritto.
+
+\begin{figure}[hbtp]
+    \centering
+    \includegraphics[width=\textwidth]{res/fig/fastflux.png}
+    \caption{Fast flux and double fast flux network.}
+    \label{fig:fast-flux}
+\end{figure}
 
 \subsubsection{Domain Generation Algorithm (DGA)}
 \label{DGA}
