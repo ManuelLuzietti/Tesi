@@ -363,7 +363,7 @@ Di seguito verranno brevemente raccolte alcune delle tecniche usate dalle Botnet
 Prima di poter analizzare le botnet dinamicamente, è necessario progettare ed eseguire il \textit{deploy} di un infrastruttura  sicura, in cui è possibile eseguire i malware relativi alla botnet oggetto di studio senza rischiare di compromettere dispositivi al di fuori del perimetro designato.
 
 
-Il deploy dell'infrastruttura è stato eseguito su un Server VMWare ESXi (\ref{esxi})  raggiungibile attraverso Virtual Private Network (VPN), in quanto situato all'interno della rete dell'Università di Bologna, Campus di Cesena. Attraverso le capacità di virtualizzazione del server sono state create una macchina Linux per ospitare il C\&C server e due macchine che verranno infettate con malware per trasformarli in bot attivi. Le macchine bot in questione sono una basata su Linux e l'altra su Windows.  Queste macchine sono assegnate a una rete VLAN isolata così che non siano in grado di comunicare con altri dispositivi al di fuori delle macchine soggette al test. Chiameremo questa rete \textit{botnet Vlan}.
+Il deploy dell'infrastruttura (\Cref{fig:infrastruttura1}) è stato eseguito su un Server VMWare ESXi (\ref{esxi})  raggiungibile attraverso Virtual Private Network (VPN), in quanto situato all'interno della rete dell'Università di Bologna, Campus di Cesena. Attraverso le capacità di virtualizzazione del server sono state create una macchina Linux per ospitare il C\&C server e due macchine che verranno infettate con malware per trasformarli in bot attivi. Le macchine bot in questione sono una basata su Linux e l'altra su Windows.  Queste macchine sono assegnate a una rete VLAN isolata così che non siano in grado di comunicare con altri dispositivi al di fuori delle macchine soggette al test. Chiameremo questa rete \textit{botnet Vlan}.
 
 Per far in modo che le macchine sotto testing potessero occasionalmente interfacciarsi alla rete Internet in modo controllato è stato aggiunto un Firewall (\ref{firewall}). La macchina in questione usa  ClearOs (\ref{ClearOS}) come sistema operativo e ha due Network Interface Card (NIC).
 Una delle NIC è collegata a una VLAN connessa a Internet e ha indirizzo IP assegnatogli attraverso Dynamic Host Configuration Protocol (DHCP). L'altra NIC è collegata alla botnet Vlan e ha indirizzo IP statico assegnatogli manualmente. 
@@ -382,6 +382,13 @@ Per lo scambio di file con macchine fuori dal perimetro del server ESXi è possi
     
 Di seguito verranno descritte più nel dettaglio le principali tecnologie sopra citate.
 
+\begin{figure}[hbtp]
+    \centering
+    \includegraphics[width=\textwidth]{infrastruttura1.png}
+    \caption{Infrastruttura di testing iniziale.}
+    \label{fig:infrastruttura1}
+\end{figure}
+
 \section{Server VMWare ESXi}
 \label{esxi}
 Il server sul quale sono stati effettuati i test usa  ESXi (Elastic Sky X integrated) \cite{esxi} sviluppato da VMWare come \textit{hypervisor bare metal} per la creazione e  gestione di macchine virtuali.
@@ -392,11 +399,18 @@ Ha il compito di astrarre il lato software di un computer dal suo hardware tradu
 L'hypervisor tratta le risorse di elaborazione (tra cui CPU, memoria, \textit{storage}) come un pool di risorse facilmente riposizionabili tra i guest esistenti o su nuove VM.
 A seconda delle esigenze le risorse vengono suddivise e trasferite dall'ambiente fisico alle varie macchine virtuali. Durante l'esecuzione di una VM, quando un utente o un programma invia un'istruzione che richiede ulteriori risorse dall'ambiente fisico, l'hypervisor programma la richiesta in base alle risorse del sistema fisico, in modo che il sistema operativo e le applicazione della macchina virtuale possano accedere al pool condiviso di risorse fisiche.
 
-Esistono due tipi di hypervisor:
+Esistono due tipi di hypervisor (\Cref{fig:hypervisors}):
 \begin{description}
     \item[tipo 1 o \textit{bare metal}] come un leggero sistema operativo che esegue direttamente sull'hardware di macchina host;
     \item[tipo 2 o \textit{hosted}] livello software  che viene eseguito  sopra un sistema operativo già funzionante, come una normale applicativo.
 \end{description}
+
+\begin{figure}[hbtp]
+    \centering
+    \includegraphics[width=8cm]{hypervisors.png}
+    \caption{Tipologie di hypervisor.}
+    \label{fig:hypervisors}
+\end{figure}
 
 Le principali differenze tra questi sono che l'hypervisor di tipo 1 è installato nell'unità di archiviazione della macchina host ed esegue direttamente sull'hardware come farebbe un sistema operativo, mentre il tipo 2 è installato come un normale software ed esegue sopra un sistema operativo di cui sfrutta le capacità di virtualizzazione.
 L'hypervisor bare metal tipicamente risulta essere più sicuro in quanto non in contatto con il sistema operativo. Infatti in caso di malfunzionamento del sistema operativo o in caso risulti vulnerabile a possibili attacchi comprometterebbe la sicurezza dell'intera struttura virtualizzata.
@@ -438,7 +452,7 @@ Il punto forte di ClearOS è la facilità di utilizzo oltre alla flessibilità. 
 
 Una volta installato, configurato e impostato come gateway all'interno della botnet Vlan, è stato installato il modulo aggiuntivo di Server DHCP, per configurare in automatico gli indirizzi di rete delle macchine interne alla Vlan.
 In seguito è stato anche testato il modulo DNS, che in fase di testing non è stato utilizzato in quanto i dispositivi in rete venivano referenziati per indirizzo IP, e alcuni moduli gratuiti di Intrusion Detection System (IDS). Tuttavia i moduli di IDS gratuiti non sono stati ritenuti all'altezza del compito che avrebbero dovuto svolgere e sono stati quindi disinstallati. Va comunque considerato che non sono state testate le soluzione a pagamento che sicuramente sarebbero state più adatte al contesto. 
-In fine prima di selezionare un modulo Firewall tra le opzioni disponibili offerte da  ClearOS, sono stati studiati Netfilter (\ref{netfilter}), Iptables (\ref{iptables}), Nftables (\ref{nftables}) e Firewalld (\ref{firewalld}). Una volta comprese queste tecnologie è stata scelta una soluzione (modulo) basata su Iptables.
+In fine prima di selezionare un modulo Firewall tra le opzioni disponibili offerte da  ClearOS, sono stati studiati Netfilter (\ref{netfilter}), Iptables (\ref{iptables}), Nftables (\ref{nftables}) e Firewalld (\ref{firewalld}). Una volta comprese queste tecnologie è stata scelta una soluzione (modulo) basata su Iptables (\Cref{fig:clearos}).
 
 Attraverso il modulo di Firewall sono state scritte delle regole, con sintassi uguale a quella di Iptables, per le seguenti security policy:
 \begin{itemize}
@@ -452,6 +466,12 @@ Attraverso il modulo di Firewall sono state scritte delle regole, con sintassi u
 \end{itemize}
 
 Quando era necessario connettere le macchine della Vlan a Internet, venivano disattivate le regole opportune per permettere il traffico di rete. 
+\begin{figure}[hbtp]
+    \centering
+    \includegraphics[width=\textwidth]{clearos.png}
+    \caption{Interfaccia web di modulo firewall all'interno di ClearOS.}
+    \label{fig:clearos}
+\end{figure}
 
 \subsection{Netfilter}
 \label{netfilter}
@@ -572,16 +592,31 @@ A livello di rete, Docker, crea di default tre network a cui i Container possono
 \end{description}
 
 I Container possono comunicare tra loro se sono associati alla stessa rete, permettendo quindi di creare applicativi complessi in cui più servizi comunicano tra loro.
-Entrando nel dettaglio, Docker usa i \textit{namespace} per creare copie dello stack di rete della macchina host  e interfacce \textit{Veth} per permettere a coppie di Container di comunicare tra loro.
+
+Entrando nel dettaglio (\Cref{fig:dockernetwork}), il network 'Bridge' è un bridge di rete, chiamato di default \textit{docker0}, creato quando viene inizializzato il servizio Docker. Ogni container appartiene ad un namespace di rete, per fare in modo che abbia una copia dello stack di rete dell'host e che sia isolato.
+I container associati al network 'Bridge', sono  in realtà collegati al bridge docker0 attraverso interfacce \textit{vEth}. Quando un container ha necessità di comunicare all'esterno dell'host viene eseguito Network Address Translation (NAT).
+I container associati al network 'Host', sono in realtà associati allo stesso namespace di rete dell'host. 
 
 Se un Container è associato a una rete interna, può essere raggiunto dal network dell'host che lo ospita attraverso un'operazione di \textit{port mapping}. In questo modo si può associare una porta del Container a una porta dell'host, quindi un pacchetto che fluisce attraverso la porta specifica dell'host verrà consegnato in automatico alla porta specifica del Container.
 
+\begin{figure}[hbtp]
+    \centering
+    \includegraphics[width=10cm]{dockernetwork.png}
+    \caption{Docker network.}
+    \label{fig:dockernetwork}
+\end{figure}
 
 
 Docker può prelevare le immagini da repository di immagini Docker detti Registry, che possono contenere anche centinaia di migliaia di immagini di applicazioni e servizi pronti per essere scaricati ed eseguiti in Container.
 
 Per sviluppare applicazioni complesse  potrebbe essere necessario eseguire molteplici Container contemporaneamente. Per evitare di dover eseguire manualmente ogni container, esistono tool di orchestrazione dei Container. Un esempio di questo genere di tool è \textit{Docker Compose}, che permette grazie a un unico file di configurazione in formato YAML di eseguire contemporaneamente  molteplici Container.
-\clearpage
+\begin{figure}[hbtp]
+    \centering
+    \includegraphics[width=8cm]{docker.png}
+    \caption{Docker containers.}
+    \label{fig:docker}
+\end{figure}
+
 \chapter{Intrusion Detection System (IDS)}
 \label{IDS}
 Un Intrusion Detection System è un software o hardware che identifica azioni non legittime su computer, col fine di preservare la sicurezza del sistema. In particolare ha l'obiettivo di identificare traffico di rete e uso di computer non legittimi, che non potrebbero essere identificati da un normale Firewall. Si possono identificare principalmente due tipi di IDS \cite{khraisat2019survey}:
