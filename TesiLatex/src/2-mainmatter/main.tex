@@ -657,7 +657,7 @@ Con SIDS si intende strumenti di rilevazione basati su tecniche di \textit{patte
 Questi solitamente hanno un'ottima accuratezza per quanto riguarda la rilevazione di minacce già note ma non possono rilevare \textit{attacchi zero-day}\footnote{attacchi informatici che sfruttano vulnerabilità di cui non si conosce l'esistenza o che non sono state ancora risolte.} dato che non esistono signature di tale attacco sino a quanto la signature di questo viene estratto e aggiunto al database.
 Gli approcci SIDS soffrono anche nell'identificare le varianti di malware noti, in quanto variazioni nel codice potrebbero comportare una signature differente al malware originale.
 
-Approcci tradizionali di SIDS sfruttano i \textit{log} di macchina host e l'analisi del traffico di rete per scovare azioni, comandi, pattern riconducibili a malware noti.
+Approcci tradizionali di SIDS sfruttano i \textit{log}\footnote{documentazione inerente un determinato evento che ha avuto esito} di una macchina host, generati dal sistema o applicazioni software, e l'analisi del traffico di rete per scovare azioni, comandi, pattern riconducibili a malware noti.
 
 
 L'approccio Anomaly-based parte dal presupposto che il comportamento non legittimo differisca da quello legittimo.
@@ -699,12 +699,11 @@ Con mirroring si intende utilizzare le capacità built-in degli switch o router,
 Il port mirroring è una funzionalità spesso già integrata nei router e switch a livello enterprise. Il traffico che passa attraverso una porta dello switch o router viene 'specchiato' verso un'altra porta. La porta selezionata per eseguire l'output della copia del traffico è detta Switch Port Analyzer (SPAN) o \textit{mirror port}. Dato che il compito primario di switch o router è il forwarding dei pacchetti, la copia dei dati è data con bassa priorità. Questo può portare a drop di pacchetti anche quando vi è basso volume di traffico. 
 Va considerato inoltre che queste porte utilizzano slot sullo switch o router che potrebbero altrimenti venir utilizzati per gli scopi di forwarding.
 
-Il port mirroring attraverso lo SPAN può anche causare effetti negativi sullo switch, intaccando quindi il traffico di rete. In caso di misconfigurazioni inoltre potrebbe intaccare anche la performance del network.
+In caso di configurazioni errate, l'utilizzo di una porta SPAN potrebbe intaccare  la performance di rete.
 
 Usa una singola porta di uscita per aggregare più link e i relativi canali di up-link e down-link. Così facendo è molto probabile che la linea di output si saturi portando a perdita dei pacchetti.
 
 Usato solitamente per monitorare bassi volumi di dati in luoghi in cui non è presente un Test Access Port. 
-Rimane comunque l'unico mono per monitorare certe specie di dati come quelli che navigano port-to-port in stesso switch.
 
 
 
@@ -714,7 +713,7 @@ Il Test Access Port (TAP) è un device di cattura del traffico di rete posiziona
 Separa canali di up-link e down-link diminuendo  la possibilità di drop di pacchetti.
 Il TAP è in grado quindi di creare una copia esatta del flusso bidirezionale a pieno rate di linea, che ne consegue nella piena fedeltà di monitoraggio.
 Ci sono TAP passivi e attivi.
-Quelli passivi non sono alimentati a  corrente e quindi in caso di malfunzionamenti della linea elettrica il sistema può comunque funzionare correttamente. Tuttavia i TAP passivi in rame distorcono il segnale rendendoli inadoperabili per linee sopra un gigabit al secondo. Esistono TAP passivi ottici per ovviare al problema, al costo di un indebolimento del segnale ottico sulla linea.
+Quelli passivi non sono alimentati  e quindi in caso di malfunzionamenti della linea elettrica il sistema può comunque funzionare correttamente. Tuttavia i TAP passivi in rame distorcono il segnale rendendoli inadoperabili per linee con velocità superiori a un gigabit al secondo. Esistono TAP passivi ottici per ovviare al problema, al costo di un indebolimento del segnale ottico sulla linea.
 Quelli attivi sono alimentati da corrente elettrica e ritrasmettono e duplicano il segnale senza introdurre distorsioni.
 
 I TAP passivi non richiedono configurazioni o interventi particolari, offrendo continuo accesso ai dati.
@@ -747,7 +746,7 @@ Con  ESM si intende l'aggiunta delle capacità di  monitoring degli \textit{end-
 \end{figure}
 
 Nella figura \ref{fig:seconionexample} si può vedere un esempio di utilizzo di Security Onion all'interno di un network enterprise.
-In questo caso il traffico di rete viene duplicato e inviato attraverso porte TAP a Security Onion che ne esegue l'analisi. Nel mentre anche i log dei sistemi monitorati vengono raccolti e analizzati. In questo modo si hanno funzioni di NIDS e di HIDS.
+In questo caso il traffico di rete viene duplicato e inviato attraverso porte TAP a un  Security Onion che ne esegue l'analisi. Nel mentre anche i log dei sistemi monitorati vengono raccolti e analizzati. In questo modo si hanno funzioni di NIDS e di HIDS.
 
 Di seguito verranno brevemente descritti i principali software che vengono utilizzati all'interno di Security Onion per poi analizzare l'architettura distribuita di tale IDS e il suo deploy all'interno dell'infrastruttura di testing.
 
@@ -764,7 +763,7 @@ ZEEK \cite{ZEEK} è un tool di analisi del traffico di rete. Al contrario di Sur
     \item Profiling di host e servizi;
     \item Anomaly detection.
 \end{itemize}
-In Security Onion viene affiancato a Suricata per la rilevazione di minacce attraverso l'analisi del traffico di rete. Mentre Suricata permette di identificare attacchi basandosi sul signature matching, ZEEK permette di reperire il contesto dell'attacco,  offrendo tutti i metadata necessari per analizzare al meglio la situazione e poter quindi agire di conseguenza.
+Security Onion viene affiancato a Suricata per la rilevazione di minacce attraverso l'analisi del traffico di rete. Mentre Suricata permette di identificare attacchi basandosi sul signature matching, ZEEK permette di reperire il contesto dell'attacco,  offrendo tutti i metadata necessari per analizzare al meglio la situazione e poter quindi agire di conseguenza.
 
 \subsubsection*{Stenographer}
 Stenographer \cite{stenographer} è un utility per la cattura del traffico di rete cui scopo è memorizzare tutto il traffico catturato su disco per scopi di intrusion detection e incident response.
@@ -776,7 +775,7 @@ Si può accedere a cattura dei pacchetti memorizzai attraverso una qualsiasi int
 \subsubsection*{Strelka}
 Strelka \cite{strelka} è un sistema di scansione di file in tempo reale, utilizzato per la ricerca e rilevazione di minacce o per analisi di incident response. Il suo scopo è l'estrazione di file e metadati su larga scala. È in grado di utilizzare regole YARA\footnote{le regole YARA usano pattern  come sequenze  di byte  o stringhe riconducibili  a malware noti.} per l'identificazione di minacce note.
 
-In Security Onion viene utilizzato per analizzare i file estratti da ZEEK e Suricata durante l'analisi del traffico di rete.
+Nel Security Onion, viene utilizzato per analizzare i file estratti da ZEEK e Suricata durante l'analisi del traffico di rete.
 
 \subsubsection*{Sensoroni}
 Sensoroni \cite{sensoroni} è un sistema software per il monitoraggio e l'interrogazione di server o dispositivi remoti.
@@ -793,7 +792,7 @@ Questa collezione era precedentemente chiamata come ELK stack, dove ELK rapprese
     In Security Onion riceve i log e ne effettua il parsing prima di memorizzarli e indicizzarli;
     \item [Logstash] Motore di data processing server-side basato su pipeline, capace di raccogliere dati da moltitudine di sorgenti, trasformali e inoltrarli.
     In Security Onion trasporta i log, su cui non è ancora stato effettuato parsing,  a Elastic Search;
-    \item [Kibana] Interfaccia GUI (\Cref{fig:kibana}) che permette di visualizzare i dati memorizzati in Elastic Search e di navigare l'Elastic Stack. Permette di visualizzare in tempo reale flussi di dati di notevoli dimensioni e di aumentarne la comprensione attraverso grafici;
+    \item [Kibana] Interfaccia GUI (\Cref{fig:kibana}) che permette di visualizzare i dati memorizzati in Elastic Search e di navigare l'Elastic Stack. Permette di visualizzare in tempo reale flussi di dati di notevoli dimensioni e di aumentarne la comprensione attraverso grafici.
 \end{description}
 
 \begin{figure}[hbtp]
@@ -804,7 +803,7 @@ Questa collezione era precedentemente chiamata come ELK stack, dove ELK rapprese
 \end{figure}
 
 
-L'ELK stack si evolse nell'Elastic Stack in seguito all'aggiunta di Beats alla collezione.
+L'ELK stack si è evoluto nell'Elastic Stack in seguito all'aggiunta di Beats alla collezione.
 I Beats sono installati come agenti su dispositivi remoti e vengono utilizzati per inviare dati di diversa natura (log, metriche, dati di rete, etc.) direttamente a Elastic Search  o indirettamente attraverso Logstash. Security Onion in particolare usa FileBeat per inoltrare log a Elastic Search.
 
 Lo stack viene principalmente usato per la gestione di ingenti quantità di dati o in caso siano necessarie capacità di ricerca avanzate sui dati. In Security Onion viene utilizzato per inoltrare, ricevere, memorizzare, indicizzare, visualizzare e analizzare i vari log generati.
@@ -813,7 +812,7 @@ Lo stack viene principalmente usato per la gestione di ingenti quantità di dati
 ElastAlert \cite{elastalert} è un framework per l'allerta su anomalie, picchi  o altri pattern di interesse all'interno dei dati custoditi in Elasticsearch. Interroga Elasticsearch e fornisce un meccanismo di allerta in tempo reale con molteplici tipi di output. 
 
 \subsubsection*{Curator}
-Curator \cite{curator} è un Utility utilizzata all'interno di Elastic Stack per la gestione degli indici di Elasticsearch. In particolare: 
+Curator \cite{curator} è un utility utilizzata all'interno di Elastic Stack per la gestione degli indici di Elasticsearch. In particolare: 
 \begin{enumerate}
     \item Ottiene lista di indici da cluster, che verrà chiamata \textit{actionable};
     \item Itera su lista di filtri definiti da utente per rimuovere progressivamente indici dalla lista actionable;
@@ -821,7 +820,7 @@ Curator \cite{curator} è un Utility utilizzata all'interno di Elastic Stack per
 \end{enumerate}
 
 \subsubsection*{Redis}
-Redis \cite{redis} è uno store di strutture dati in memoria open source, utilizzato come database, cache e message broker. Supporta strutture dati come stringhe, hash, liste, insiemi, insiemi ordinati, etc.
+Redis \cite{redis} è uno store open source di strutture dati memorizzate in memoria, utilizzato come database, cache e message broker. Supporta strutture dati come stringhe, hash, liste, insiemi, insiemi ordinati, etc.
 I  dataset vengono mantenuti in memoria principale rendendo l'accesso estremamente veloce, ma i dati possono anche essere resi persistenti all'occorrenza.
 
 Security Onion utilizza Redis come contenitore temporaneo dei log ricevuti da Logstash. I log così memorizzati vengono poi reperiti da Logstash e consegnati a Elastic Search.
@@ -921,7 +920,7 @@ Esegue inoltre:
 Attraverso il Manager Node l'analista può interfacciarsi con Security Onion per eseguire query e reperire/analizzare dati.
 
 \vspace{5mm}
-Il Search Node usa Logstash per consumare log da coda in Manager Node per poi eseguirne il parsing e l'indicizzazione con ElasticSearch. Usa Curator per gestire gli indici e ha Wazuh installato come agent HIDS. Quando analista esegue una query su Manager Node, questo esegue a sua volta query su Search Node e ne restituisce il risultato.
+Il Search Node usa Logstash per consumare log da coda in Manager Node per poi eseguirne il parsing e l'indicizzazione con ElasticSearch. Usa Curator per gestire gli indici e ha Wazuh installato come agent HIDS. Quando un analista esegue una query su Manager Node, questo esegue a sua volta query su Search Node e ne restituisce il risultato.
 L'aggiunta di Search Node può avvenire attraverso \textit{cross cluster search}, dove ogni Search Node è indipendente, o attraverso \textit{clustering} tradizionale in cui tutti i Search Node si uniscono logicamente per formare un singolo cluster.
 
 \subsection{Deploy e requisiti Hardware}
@@ -958,7 +957,7 @@ La memoria secondaria invece  per utilizzi generali di sistema operativo e per m
 
 I Search Node usano la CPU principalmente per eseguire il parsing e l'indicizzazione dei log, ovviamente la richiesta di CPU aumenta all'aumentare del numero di log da elaborare.
 
-La quantità di RAM a disposizione influenza direttamente la velocità di ricerca all'interno degli indici e l'affidabilità del sistema di ricerca. I Programmi principalmente coinvolti nell'utilizzo della RAM sono Logstash ed Elasticsearch.
+La quantità di RAM a disposizione influenza direttamente la velocità di ricerca all'interno degli indici e l'affidabilità del sistema di ricerca. I programmi principalmente coinvolti nell'utilizzo della RAM sono Logstash ed Elasticsearch.
 
 La memoria secondaria viene utilizzata per memorizzare metadati indicizzati. All'aumentare dello spazio a disposizione è possibile aumentare i tempi di conservazione dei dati.
 
@@ -1014,7 +1013,7 @@ In seguito è stato installato il Search Node all'interno di un'altra VM. Questa
 Infine è stata creata un'ulteriore VM in cui è stato installato il Forward Node. Questa ha due interfacce di rete. Una collegata alla stessa rete del Manager Node, mentre l'altra è collegata alla botnet Vlan di cui si vuole monitorare il traffico di rete. In particolare quest'ultima deve essere in modalità promiscua\footnote{in modalità promiscua l'interfaccia di rete lascia passare anche il traffico non rivolto all'interfaccia stessa, verso la cpu.}.
 In una situazione normale sarebbe necessario duplicare il traffico di rete attraverso TAP o SPAN e inviarne una copia all'interfaccia del Forward Node per poterlo analizzare, ma in questo caso particolare non è necessario. Infatti grazie al network virtualizzato del server ESXi basta impostare il virtual switch in modalità promiscua e tutto il traffico di rete sarà catturabile.
 
-Una volta terminata l'installazione sono state aggiunte regole al Firewall integrato di Security Onion per poter accedere all'interfaccia web del Manager Node. 
+Una volta terminata l'installazione sono state aggiunte regole al Firewall integrato del Security Onion per poter accedere all'interfaccia web del Manager Node. 
 Una volta impostato l'indirizzo di rete da monitorare è stato accertato che i servizi funzionassero correttamente.
 In particolare sono state attivate tutte le regole built-in di Suricata e sono stati effettuati dei semplici test di scansione con Nmap\footnote{software utilizzato per eseguire scansioni di rete.} \cite{nmap}  per verifica che le scansioni venissero effettivamente  rilevate.
 
@@ -1259,7 +1258,7 @@ Tra questi possiamo trovare:
 \begin{description}
     \item [Persistence] Cerca di rendere il malware persistente all'interno del sistema che lo ospita;
     \item [Packet Sniffer] Cattura traffico di rete;
-    \item [Escalete Privileges] Tenta di ottenere privilegi di amministratore;
+    \item [Escalate Privileges] Tenta di ottenere privilegi di amministratore;
     \item [Port Scanner] Scansiona traffico di rete;
     \item [Keylogger] Cattura digitazioni della tastiera;
     \item [Screenshot] Cattura immagine del monitor;
@@ -1293,7 +1292,7 @@ Oltre a questi moduli built-in, il bot può anche importare moduli creati ad-hoc
     \label{ciao1}
 \end{figure}
 
-L'interfaccia web del C\&C è  dotato di sistema di autenticazione, per impedire che terzi possano prenderne il controllo facilmente. Quindi prima di poter interagire con le funzionalità che offre l'interfaccia web è necessario eseguire il login nell'apposita pagina web.
+L'interfaccia web del C\&C è  dotata di sistema di autenticazione, per impedire che terzi possano prenderne il controllo facilmente. Quindi prima di poter interagire con le funzionalità che offre l'interfaccia web è necessario eseguire il login nell'apposita pagina web.
 Nella \Cref{fig:byobhome}  si può vedere la schermata di controllo principale dell'interfaccia web di Byob. In basso è presente una schermata con i bot attualmente collegati. Sul lato  sinistro vi è  un pannello con i moduli di post-exploitation utilizzabili sui bot del pannello sottostante, mentre a destra si può controllare la posizione geografica del bot. 
 
 Cliccando sull'icona del terminale in corrispondenza di un bot nel pannello inferiore, reindirizza il browser verso una schermata in cui viene emulato un terminale. Questo è collegato al bot attraverso reverse-shell e può essere usato per operare direttamente sul bot.
@@ -1558,7 +1557,7 @@ Alcuni dei vantaggi nell'implementare un mobile agent per rispondere a intrusion
 \begin{description}
     \item [Tracciatura di un attaccante] Gli attaccanti spesso si insinuano all'interno di una catena di molti host prima di attaccare l'obiettivo e generalmente falsificano l'indirizzo di origine. Per trovare l'attaccante l'IDS deve ispezionare la catena di host per trovare il responsabile dell'inoltro dei pacchetti considerati come maligni. Per eseguire una tale traccia l'IDS deve essere in grado di analizzare il traffico di rete di ogni segmento di rete e ogni host. In genere tale compito sarebbe troppo dispendioso ma è realizzabile  con una base di agent abbastanza ampia;
     \item [Risposta in host target] Quando un attacco viene rilevato è importante poter rispondere alla minaccia all'interno dell'host colpito. Ciò è effettuabile attraverso gli agent;
-    \item [Risposta in sorgente di attacco] Una possibile riformulazione più fluida potrebbe essere: "Per limitare le azioni dell'attaccante, l'IDS può agire direttamente sul suo host, ma ciò richiede l'uso di agenti mobili, altrimenti l'accesso sarebbe limitato. Nonostante questa opzione abbia delle restrizioni, come la necessità che l'attacco provenga dall'interno del dominio di gestione, può comunque essere un'arma molto efficace per l'IDS;
+    \item [Risposta in sorgente di attacco] Per limitare le azioni dell'attaccante, l'IDS può agire direttamente sul suo host, ma ciò richiede l'uso di agenti mobili, altrimenti l'accesso sarebbe limitato. Nonostante questa opzione abbia delle restrizioni, come la necessità che l'attacco provenga dall'interno del dominio di gestione, può comunque essere un'arma molto efficace per l'IDS;
     \item [Raccolta di evidenze] Al momento, è difficile raccogliere automaticamente prove di attacchi provenienti da molteplici fonti. Ciò è dovuto alla necessità di avere il software adatto eseguito nel luogo e nel momento giusto. Tuttavia, gli agenti mobili possono essere utilizzati per eseguire qualsiasi cosa in qualsiasi momento e ovunque, rendendo possibile la raccolta di prove da diverse piattaforme hardware, sistemi operativi e persino applicazioni come i server web;
     \item[Isolamento di target e attaccante] Poiché le azioni per rispondere automaticamente al bersaglio e alla fonte possono fallire, è necessaria  una risposta a livello di rete per limitare le azioni di un attaccante. Ci sono tre strategie generali: bloccare le comunicazioni del bersaglio, bloccare le comunicazioni dell'attaccante e bloccare le comunicazioni tra il bersaglio e l'attaccante. Grazie alla loro capacità di viaggiare in tutti gli elementi della rete per eseguire azioni correttive, gli agenti mobili sono in grado di attuare tali strategie.
 \end{description}
@@ -1667,12 +1666,14 @@ Le precedenti funzionalità sono configurabili attraverso file di configurazione
 \end{figure}
 
 \subsection{Deploy e configurazione}
- L'obiettivo era l'installazione di un agent all'interno di una delle due macchine adibite ad essere infettata al fine di poter studiare le tecnologie  HIDS. Dato che la prossima botnet oggetto di studio esegue solo su Windows, l'agent verrà installato sulla macchina con OS.
+ L'obiettivo era l'installazione di un agent all'interno di una delle macchine virtuali destinate a diventare bot, al fine di poter studiare le tecnologie  HIDS. Dato che la prossima botnet oggetto di studio è progettata per operare solo su macchine  Windows, l'agent verrà installato sulla macchina virtuale con tale sistema operativo.
  
 Sia Security Onion che Ossim, offrono la possibilità di ricevere log inviati da agenti Wazuh  e mettono a disposizione dell'utente la possibilità di scaricare l'agent dal web server.
 
 Inizialmente è stato eseguito il deploy dell'agent Wazuh sfruttando  Security Onion come server. Per fare ciò, in seguito all'aggiunta di regole firewall e alla registrazione dell'host  come agent, è stato scaricato il pacchetto di installazione dalla web gui di Security Onion. In seguito all'installazione dell'agent è stato notato che la versione del software non era aggiornata. Per evitare complicazioni in fase di testing e per poter sfruttare a pieno le capacità della versione più aggiornata è stato deciso di procede con l'installazione dell'agent fornito da Ossim. 
+
 \medskip
+
 Ossim offre la possibilità di installare automaticamente l'agent all'interno di Asset con sistema operativo Windows. Tuttavia tale approccio non è andato a buon fine e quindi si è proseguito con l'installazione manuale. Una volta registrato l'Asset come possessore di agent, tramite l'interfaccia web, è stato possibile eseguire il deploy dell'agent  attraverso un semplice comando da terminale, fornito al momento della registrazione. Il comando in questione era incaricato  di scaricare, installare e configurare l'agent  in modo che potesse comunicare col server.
 
 Seppure la versione di Ossim fosse più aggiornata di quella di Security Onion, non era comunque l'ultima versione disponibile del software. Inoltre, entrambi gli IDS offrivano possibilità di visualizzazione e debug limitate in confronto al server Wazuh originale.
@@ -1806,7 +1807,7 @@ In seguito invia un comando di \textit{Join} al server attraverso HTTP, in cui a
     \item Identificativo Hardware (HWID) associato al dispositivo.
 \end{itemize}
 In fine entra in un loop che si occupa di gestire la comunicazione col server e tutte le fasi operazionali di cui è incaricato.
-Entrando nei dettagli del loop, invia periodicamente un comando di Poll  a cui master risponde all'occorrenza con il prossimo comando da eseguire. Quando il comando viene ricevuto, ne esegue il parsing e nel caso sia un comando riconosciuto esegue l'handler ad esso associato (\Cref{fig:uboatcommandexecution}). Infine attenda una quantità di tempo preimpostata prima di ripetere il ciclo e quindi di rieffettuare il polling verso il server.
+Entrando nei dettagli del loop, invia periodicamente un comando di Poll  a cui master risponde all'occorrenza con il prossimo comando da eseguire. Quando il comando viene ricevuto, ne esegue il parsing e nel caso sia un comando riconosciuto esegue l'handler ad esso associato (\Cref{fig:uboatcommandexecution}). Infine attende una quantità di tempo preimpostata prima di ripetere il ciclo e quindi di rieffettuare il polling verso il server.
 
 \medskip
 Un comando è composto di tre campi: identificativo, tipo e dati.
@@ -1881,7 +1882,7 @@ Prima di procedere con il test della botnet, sono state apportate alcune modific
 
 Una volta sistemati questi bug è stato possibile testare le varie funzionalità operative della botnet:
 \begin{itemize}
-    \item Esecuzione di processo da remoto con possibilità di aggiungere parametri. La possibilità di aggiungere parametri permette anche di eseguire script, ad esempio, eseguendo un'interprete di comandi e passandogli comandi interpretabili;
+    \item Esecuzione di processo da remoto con possibilità di aggiungere parametri. La possibilità di aggiungere parametri permette anche di eseguire script, ad esempio, eseguendo un interprete di comandi e passandogli comandi interpretabili;
     \item Funzionalità DDoS, seppure l'implementazione non sia molto efficiente. Essa infatti consiste di un loop in cui vengono aperte connessioni TCP verso il target per inviare una serie di dati. Per provvedere alla scarsa efficienza della funzionalità built-in, è stato testato un tool di DDoS reperito in Internet, che è stato eseguito per mezzo della funzionalità di esecuzione di processi;
     \item Keylogging, ovvero la capacità di poter estrapolare  dal bot, in forma di dati, le digitazioni da tastiera dell'utente;
     \item Download ed esecuzione di eseguibile. Un dettaglio importante che verrà utilizzato nella fase di rilevazione, è che il bot usa l'\textit{esplora risorse} di Windows per eseguire i file scaricati;
@@ -1935,7 +1936,7 @@ networks:
 \section{Rilevazioni con IDS}
 %lua scripting su richieste http per deoffuscare
 \subsection{Network based IDS}
-L'invio periodo delle richieste di Poll da parte del bot non rilevano niente  di sospetto se non che le richieste sono destinate a indirizzi IP e non a hostname, cosa abbastanza insolita in un contesto normale.
+L'invio periodico delle richieste di Poll da parte del bot non indicano niente  di sospetto se non che le richieste sono destinate a indirizzi IP e non a hostname, cosa abbastanza insolita in un contesto normale.
 
 Se l'indirizzo IP del server fosse noto come un indirizzo IP malevolo e fosse inserito all'interno di liste di IP considerati pericolosi, gli IDS  potrebbero rilevare il traffico di rete sfruttando queste liste. 
 

@@ -6,7 +6,7 @@ Dalle analisi condotte sulle due botnet, emerge che sono stati utilizzati princi
 Come osservato nel \Cref{IDS}, gli approcci fingerprint based funzionano molto bene per malware e attività malevole per cui esista già una firma identificativa al momento della rilevazione. Nello studio  effettuato su UBoat (\Cref{uboat}) si può osservare come le regole create per l'identificazione della botnet siano basate su caratteristiche peculiari del software analizzato. Piccole variazioni o l'offuscamento all'interno del codice del  payload, potrebbero rendere parte delle regole di rilevazione create inefficienti verso la nuova versione del software malevolo. Ad esempio, se il botmaster distribuisse una nuova versione del payload, che durante la fase operativa di instaurazione della persistenza inserisce una copia dell'eseguibile nel sistema con un nome o una posizione differenti da quelle specificate, si potrebbero perdere gli allarmi relativi a tale evento.
 Complicazioni aggiuntive come la cifratura del traffico di rete e tecniche di \textit{detection evasion} possono rendere ancora più ardua la rilevazione.
 
-Va considerato anche che le attività degli host monitorati potrebbero generare molta attività di log rendendo le rilevazioni molto rumorose e spesso difficile da analizzare.
+Va considerato anche che le attività degli host monitorati potrebbero generare molta attività di log rendendo le rilevazioni molto rumorose e spesso difficili da analizzare.
 Inoltre come già precedentemente osservato, tale approccio non può essere applicato in caso di malware zero-day. Per cercare di ovviare a queste problematiche i ricercatori e vendor di sistemi di sicurezza informatici, cercano di tenere i database di fingerprint  il più aggiornati possibile oltre a ricercare nuove tecniche principalmente basati su rilevazioni di anomalie.
 
 Tra le tecniche e le possibilità di rilevazione  fingerprint based analizzate, che sarebbe possibile integrare facilmente all'interno dell'infrastruttura di testing sviluppata, vi sono:
@@ -63,7 +63,7 @@ Su un sistema Windows può essere utile sfruttare i log di Windows Defender\foot
 
 Un'ultima menzione è la possibilità di integrazione del modulo di File Integrity Monitoring degli agent Wazuh con il servizio VirusTotal \cite{virustotal}. VirusTotal è un sistema che sfrutta più di 70 antivirus/scanner e molteplici liste di domini/IP malevoli, per eseguire l'analisi di file online direttamente dal portale web del servizio. Esso offre inoltre un API utilizzabile per sfruttare il servizio programmaticamente. Grazie all'integrazione con Wazuh, quando l'agente segnala un cambiamento, una creazione o una cancellazione di un file, il server  utilizza l'API di VirusTotal per inoltrare l'hash del file e ricevere i risultati dell'analisi da esso effettuata.
 
-In conclusione, questi sono solo alcuni dei potenti esempi di integrazione che è possibile effettuare per aumentare ulteriormente l'analisi su un sistema. Il vasto mercato dei sistemi di sicurezza lascia un'ampia scelta all'amministrazione della sicurezza, permettendo di personalizzare ulteriormente il livello di protezione del sistema.
+In conclusione, questi sono solo alcuni dei rilevanti esempi di integrazione che è possibile effettuare per aumentare ulteriormente l'analisi su un sistema. Il vasto mercato dei sistemi di sicurezza lascia un'ampia scelta all'amministrazione della sicurezza, permettendo di personalizzare ulteriormente il livello di protezione del sistema.
 
 
 \medskip
