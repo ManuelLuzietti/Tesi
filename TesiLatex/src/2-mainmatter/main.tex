@@ -344,7 +344,9 @@ Di seguito verranno brevemente raccolte alcune delle tecniche usate dalle Botnet
  
  Tecnica usata per aumentare la segretezza del C\&C server che consiste nell'aggiungere un numero arbitrario di nodi intermedi tra il server e i bot destinatari dei comandi.  Questo può essere ottenuto implementando un layer di routing che permette di far rimbalzare i messaggi tra un numero desiderato di nodi prima di consegnarlo a destinazione.
 
-
+\subsection*{Rootkit}
+I rootkit sono un tipo di software progettato per nascondere le attività di un malware all'interno del sistema.
+Spesso utilizzano funzionalità di api hooking (\Cref{apihooking}) per intercettare le chiamate a funzioni di libreria del sistema al fine di nascondere l'esecuzione di file malevoli o attività di essi.
 
 
 
@@ -568,7 +570,12 @@ In questo modo è possibile eseguire e spostare il software o l'applicazione con
 Lo scopo quindi della containerizzazione è il poter eseguire applicativi, servizi, processi ovunque, in qualsiasi momento e in un ambiente isolato, risolvendo in questo modo le problematiche sopra citate.
 
 Un Container può essere visto come un processo che dà all'utente l'illusione di eseguire sopra un sistema operativo, si parla infatti di \textit{lightweight process virtualization}. In particolare sfruttano componenti del Kernel Linux per virtualizzare, isolare e gestire le risorse.
-
+\begin{figure}[hbtp]
+    \centering
+    \includegraphics[width=8cm]{docker.png}
+    \caption{Docker containers.}
+    \label{fig:docker}
+\end{figure}
 I Container condividono il Kernel del sistema operativo sul quale eseguono, così facendo non hanno bisogno di dover virtualizzare il sistema operativo per poter eseguire componenti software \cite{mouat2015using}.  
 Essi \textit{vivono} solo per il tempo dell'esecuzione del processo o del servizio che ospitano.
 Per questi motivi dunque sono  più leggeri e  meno dispendiosi in termini di potenza di calcolo di una macchina virtuale, oltre a risultare più veloci in termini di \textit{boot} e \textit{shutdown}.
@@ -578,8 +585,19 @@ Dato che i Container sono soluzioni a basso livello solitamente difficili da uti
 Docker usa le Docker Image, che rappresentano una serie di istruzioni da eseguire sequenzialmente, al fine di creare un Docker Container \cite{mouat2015using}. Contengono inoltre il codice, le librerie necessarie, tool, dipendenze e tutto quello che è indispensabile per eseguire l'applicativo o il servizio contenuto. Quando viene eseguita una Docker Image, si creano una o più istanze di Container, usando quell'immagine come template.
 
 
-Le Docker Image vengono create a partire da file di configurazione, detti Dockerfile. Nel Dockerfile viene specificata la Docker Image di partenza e tutte le operazioni, che su questa verranno eseguite, atte a costruire il template per i futuri Container. Quando viene eseguita la \textit{build} dell'immagine, ogni operazione all'interno del Dockerfile costituisce un livello che viene posta sopra al livello dell'operazione precedente. Ogni livello contiene solo le differenze dal livello precedente. In questo modo se la build dovesse fallire, al tentativo successivo riprenderebbe dal livello in cui si era interrotto. Questo meccanismo permette anche di accelerare i tempi in caso di \textit{rebuild} in seguito a piccoli cambiamenti nel Dockerfile, in quanto i livelli verranno ricostruiti dal primo cambiamento a seguire.
-
+Le Docker Image vengono create a partire da file di configurazione, detti Dockerfile. Nel Dockerfile viene specificata la Docker Image di partenza e tutte le operazioni, che su questa verranno eseguite, atte a costruire il template per i futuri Container. Per un esempio di Dockerfile si osservi la sezione di codice \ref{listing:dockerfile}.
+\begin{lstlisting}[float={h},xleftmargin=0.2\textwidth, xrightmargin=0.2\textwidth,caption={Esempio di Dockerfile.},label={listing:dockerfile},captionpos=b,frame=single]{}
+FROM ubuntu:18.04
+COPY . /app
+RUN make /app
+\end{lstlisting}
+Quando viene eseguita la \textit{build} dell'immagine, ogni operazione all'interno del Dockerfile costituisce un livello che viene posta sopra al livello dell'operazione precedente \Cref{fig:dockerlayers}. Ogni livello contiene solo le differenze dal livello precedente. In questo modo se la build dovesse fallire, al tentativo successivo riprenderebbe dal livello in cui si era interrotto. Questo meccanismo permette anche di accelerare i tempi in caso di \textit{rebuild} in seguito a piccoli cambiamenti nel Dockerfile, in quanto i livelli verranno ricostruiti dal primo cambiamento a seguire.
+\begin{figure}[hbtp]
+    \centering
+    \includegraphics[width=0.9\textwidth]{dockerlayers.png}
+    \caption{Creazione dei livelli dell'immagine a partire dal Dockerfile ed esecuzione del container.}
+    \label{fig:dockerlayers}
+\end{figure}
 I livelli sono \textit{read only} e sono condivisi tra tutte le istanze di Container della stessa immagine. Quando viene eseguito un Container, si crea un ulteriore livello che è \textit{readable} e \textit{writeable}, che chiameremo 'livello container'. Quando viene modificato un file read only all'interno di un  livello non modificabile, si crea una copia locale di quel file nel livello container e la modifica viene eseguita sulla  copia\footnote{tecnica definita come \textit{Copy on write}.}.
 
 Quando si crea un nuovo file questo viene aggiunto  al livello container. Nel momento in cui il Container viene rimosso o finisce la propria esecuzione, tutto il contenuto del livello container viene cancellato. Se è richiesta  persistenza di alcune directory  e del relativo contenuto è necessario eseguire il \textit{mount} di una directory dell'host all'interno del container con direttive apposite.  Questo equivale a livello logico all'associare una directory dell'host a una directory del Container, così che al termine dell'esecuzione i dati all'interno della directory del Container persistano nella directory dell'host.
@@ -609,13 +627,22 @@ Se un Container è associato a una rete interna, può essere raggiunto dal netwo
 
 Docker può prelevare le immagini da repository di immagini Docker detti Registry, che possono contenere anche centinaia di migliaia di immagini di applicazioni e servizi pronti per essere scaricati ed eseguiti in Container.
 
-Per sviluppare applicazioni complesse  potrebbe essere necessario eseguire molteplici Container contemporaneamente. Per evitare di dover eseguire manualmente ogni container, esistono tool di orchestrazione dei Container. Un esempio di questo genere di tool è \textit{Docker Compose}, che permette grazie a un unico file di configurazione in formato YAML di eseguire contemporaneamente  molteplici Container.
-\begin{figure}[hbtp]
-    \centering
-    \includegraphics[width=8cm]{docker.png}
-    \caption{Docker containers.}
-    \label{fig:docker}
-\end{figure}
+Per sviluppare applicazioni complesse  potrebbe essere necessario eseguire molteplici Container contemporaneamente. Per evitare di dover eseguire manualmente ogni container, esistono tool di orchestrazione dei Container. Un esempio di questo genere di tool è \textit{Docker Compose}, che permette grazie a un unico file di configurazione (sezione di codice \ref{listing:dockercompose}) in formato YAML di eseguire contemporaneamente  molteplici Container.
+\begin{lstlisting}[float={h},xleftmargin=0.2\textwidth, xrightmargin=0.2\textwidth,caption={Esempio di file di configurazione Docker Compose per l'esecuzione di molteplici container.},label={listing:dockercompose},captionpos=b,frame=single]{}
+version: "3.9"
+services:
+  web:
+      build: .
+      ports:
+          - "8000:5000"
+      volumes:
+          - .:/code
+      environment:
+          FLASK_DEBUG: "true"
+  redis:
+      image: "redis:alpine"
+\end{lstlisting}
+
 
 \chapter{Intrusion Detection System (IDS)}
 \label{IDS}
@@ -692,6 +719,12 @@ Quelli attivi sono alimentati da corrente elettrica e ritrasmettono e duplicano 
 
 I TAP passivi non richiedono configurazioni o interventi particolari, offrendo continuo accesso ai dati.
 
+\begin{figure}[hbtp]
+    \centering
+    \includegraphics[width=8cm]{tapvsspan.png}
+    \caption{Esempio di applicazioni di SPAN e TAP.}
+    \label{fig:tapvsspan}
+\end{figure}
 
 \subsection{Port mirroring via software}
 Altri approcci meno scalabili sono possibili, come ad esempio l'utilizzo di software e tool per eseguire la copia e l'inoltro del traffico di rete.
@@ -760,8 +793,16 @@ Questa collezione era precedentemente chiamata come ELK stack, dove ELK rapprese
     In Security Onion riceve i log e ne effettua il parsing prima di memorizzarli e indicizzarli;
     \item [Logstash] Motore di data processing server-side basato su pipeline, capace di raccogliere dati da moltitudine di sorgenti, trasformali e inoltrarli.
     In Security Onion trasporta i log, su cui non è ancora stato effettuato parsing,  a Elastic Search;
-    \item [Kibana] Interfaccia GUI  che permette di visualizzare i dati memorizzati in Elastic Search e di navigare l'Elastic Stack. Permette di visualizzare in tempo reale flussi di dati di notevoli dimensioni e di aumentarne la comprensione attraverso grafici;
+    \item [Kibana] Interfaccia GUI (\Cref{fig:kibana}) che permette di visualizzare i dati memorizzati in Elastic Search e di navigare l'Elastic Stack. Permette di visualizzare in tempo reale flussi di dati di notevoli dimensioni e di aumentarne la comprensione attraverso grafici;
 \end{description}
+
+\begin{figure}[hbtp]
+    \centering
+    \includegraphics[width=0.7\textwidth]{kibana.png}
+    \caption{Kibana.}
+    \label{fig:kibana}
+\end{figure}
+
 
 L'ELK stack si evolse nell'Elastic Stack in seguito all'aggiunta di Beats alla collezione.
 I Beats sono installati come agenti su dispositivi remoti e vengono utilizzati per inviare dati di diversa natura (log, metriche, dati di rete, etc.) direttamente a Elastic Search  o indirettamente attraverso Logstash. Security Onion in particolare usa FileBeat per inoltrare log a Elastic Search.
@@ -786,6 +827,26 @@ I  dataset vengono mantenuti in memoria principale rendendo l'accesso estremamen
 Security Onion utilizza Redis come contenitore temporaneo dei log ricevuti da Logstash. I log così memorizzati vengono poi reperiti da Logstash e consegnati a Elastic Search.
 
 \subsubsection*{Security Onion Console (SOC)}
+
+
+\begin{figure}[hbtp]
+    \centering
+    \begin{subfigure}{0.45\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{securityonionconsole1.png}
+        \caption{Dashboard.}
+        \label{fig:securityonionconsole1}
+    \end{subfigure}
+    \begin{subfigure}{0.45\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{securityonionconsole2.png}
+        \caption{Alerts.}
+        \label{fig:securityonionconsole2}
+    \end{subfigure}
+    \caption{Alcune delle visualizzazioni dell'interfaccia web di Security Onion.}
+    \label{fig:securityonionconsoles}
+\end{figure}
+
 SOC è l'interfaccia web attraverso cui un'analista può accedere ai vari tool di analisi offerti dalla piattaforma.
 L'interfaccia web è divisa più sezioni.
 Tra le sezioni built-in vi sono:
@@ -793,7 +854,7 @@ Tra le sezioni built-in vi sono:
     \item[Alerts] Visualizza gli \textit{alert} che Security Onion sta generando. È possibile visualizzarne i dettagli e i PCAP a cui sono associati o aggiungere l'alert a dei Case;
     \item[Dashboard] Permette di avere un overview generale del sistema. Personalizzabile all'occorrenza;
     \item[Hunt] Simile alla Dashboard ma più mirata alla ricerca di minacce;
-    \item[Case] Interfaccia per gestire i Case. Attraverso i Case è possibile raggruppare più alert che si ritengono essere associati per studiare nel dettaglio la possibile intrusione o anomalia;
+    \item[Cases] Interfaccia per gestire i Case. Attraverso i Case è possibile raggruppare più alert che si ritengono essere associati per studiare nel dettaglio la possibile intrusione o anomalia;
     \item[PCAP] Permette di analizzare i PCAP raccolti con Stenographer, anche in relazione a un particolare evento;
     \item[Grid] Permette di controllare lo status dei nodi appartenenti al sistema Security Onion.
 \end{description}
@@ -832,6 +893,15 @@ Si compone di  tre tipologie di nodi:
     \item Manager Node;
     \item Search Node.
 \end{itemize}
+
+\begin{figure}[hbtp]
+    \centering
+    \includegraphics[width=10cm]{securityonionarchitecture.png}
+    \caption{Architettura di installazione distribuita di Security Onion \cite{securityonionimage}.}
+    \label{fig:securityonionarchitecture}
+\end{figure}
+
+
 
 \vspace{5mm}
 Il Forward Node è un sensore che esegue Zeek, Suricata, Stenographer e Wazuh per generare log. In particolare, come detto, Zeek e Suricata analizzano il traffico di rete, Wazuh funge da HIDS sull'end-point e Stenographer memorizza i PCAP all'interno di esso. Tutti i log vengono inviati attraverso FileBeat a Manager Node. I PCAP vengono all'occorrenza reperiti dal Forward Node attraverso il Sensoroni agent.
@@ -950,6 +1020,12 @@ In particolare sono state attivate tutte le regole built-in di Suricata e sono s
 
 %sistemare grafica e aggiungere tabelle con requisiti minimi e adoperati per ogni nodo.
 
+\begin{figure}[hbtp]
+    \centering
+    \includegraphics[width=\textwidth]{deploysecurityonion.png}
+    \caption{Deploy dei nodi di Security Onion all'interno del network virtuale dell'infrastruttura di testing.}
+    \label{fig:deploysecurityonion}
+\end{figure}
 
 \subsection{SALT}
 
@@ -1089,6 +1165,8 @@ Ossim \cite{ossim} è un prodotto Security Information and Event Management (SIE
 Attraverso l'analisi dei dati è capace di generare allarmi in caso di eventi sospetti, oltre a poter generare report.
 Ossim viene integrato con Open Threat Exchange (OTX), una piattaforma in cui utenti possono scambiarsi informazioni su host maligni.
 
+
+
 È in grado di supportare log di diversa natura e da molteplici sorgenti. È anche possibile inoltrare coppia di traffico di rete.
 
 Ossim è costituito di tre elementi:
@@ -1110,7 +1188,12 @@ Ogni Asset aggiunto deve passare attraverso i seguenti moduli per poter avere il
 \end{description}
 
 Ossim e l'intera infrastruttura è configurabile e gestibile una volta installato attraverso l'interfaccia web.
-
+\begin{figure}[hbtp]
+    \centering
+    \includegraphics[width=0.8\textwidth]{ossim.png}
+    \caption{Interfaccia web di visualizzazione dei log.}
+    \label{fig:ossim}
+\end{figure}
 
 \subsection*{Deploy e requisiti Hardware}
 
@@ -1139,6 +1222,13 @@ I requisiti Hardware richiesti  e soddisfati per gestire dai 1000 ai 2000  event
     \caption{Requisiti minimi e risorse effettivamente assegnate ad Ossim.}
     \label{tab:requisitiHw4}
 \end{table}
+
+\begin{figure}[hbtp]
+    \centering 
+    \includegraphics[width=0.8\textwidth]{deployossim.png}
+    \caption{Deploy di Ossim in modalità standalone all'interno dell'infrastruttura di testing.}
+    \label{fig:deployossim}
+\end{figure}
 
 \chapter{Studio Botnet 1 - Byob}
 %descrizione OK
@@ -1541,6 +1631,35 @@ Le precedenti funzionalità sono configurabili attraverso file di configurazione
 
 %aggiungere regola e decoder di esempio?
 
+\begin{figure}[hbtp]
+    \centering
+    \begin{subfigure}{0.45\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{wazuh1.png}
+        \caption{visualizzazione eventi.}
+        \label{fig:wazuh1}
+    \end{subfigure}
+    \begin{subfigure}{0.45\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{wazuh2.png}
+        \caption{Dashboard.}
+        \label{fig:wazuh2}
+    \end{subfigure}
+    \begin{subfigure}{0.45\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{wazuh3.png}
+        \caption{schermata di gestione degli agent.}
+        \label{fig:wazuh3}
+    \end{subfigure}
+    \begin{subfigure}{0.45\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{wazuh4.png}
+        \caption{overview di un agent specifico.}
+        \label{fig:wazuh4}
+    \end{subfigure}
+    \caption{Alcune delle visualizzazioni offerte dall'interfaccia web.}
+\end{figure}
+
 \subsection{Deploy e configurazione}
  L'obiettivo era l'installazione di un agent all'interno di una delle due macchine adibite ad essere infettata al fine di poter studiare le tecnologie  HIDS. Dato che la prossima botnet oggetto di studio esegue solo su Windows, l'agent verrà installato sulla macchina con OS.
  
@@ -1586,6 +1705,13 @@ Nella sezione di codice \ref{sysmonconfig1}, è possibile osservare l'aggiunta a
         <lof_format>eventchannel</lof_format>
     </localfile>
 \end{lstlisting}
+
+\begin{figure}[hbtp]
+    \centering
+    \includegraphics[width=0.8\textwidth]{deploywazuh.png}
+    \caption{deploy del server Wazuh all'interno dell'infrastruttura.}
+    \label{fig:deploywazuh}
+\end{figure}
 
 
 
