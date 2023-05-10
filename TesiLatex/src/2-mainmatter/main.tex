@@ -1375,10 +1375,10 @@ Il Payload è il cuore del malware.
 
 Una volta eseguito instaura una connessione col server e inizializza due thread, incaricati di ricercare e importare  moduli e package da remoto, per poi entrare in un loop in attesa di task da eseguire.
 
-Alla ricezione di un task,  esegue il parsing e ne esegue comando, cui  risultato viene incapsulato e inoltrato al server.
+Alla ricezione di un task,  esegue il parsing e ne esegue comando (\Cref{fig:byobcommandexecution}), cui  risultato viene incapsulato e inoltrato al server.
 Nel caso il server operi  senza interfaccia web, viene eseguito un thread incaricato di eseguire polling verso il server, a cui il server occasionalmente risponderà con un task.
 
-In caso la ricezione del comando fosse un modulo, questo viene importato da remoto e inseguito eseguito.
+In caso il comando ricevuto necessiti  un modulo o package, questo viene importato da remoto.
 
 L'importazione di un modulo (o package) avviene aggiungendo un oggetto di classe Loader, contenenti i metodi \textit{find\_module} e \textit{load\_module}, alla lista di oggetti \textit{sys.meta\_path} e in seguito eseguendo l'import manuale del modulo. 
 Normalmente, quando l'interprete Python cerca di importare un modulo, naviga la lista \textit{sys.meta\_path} ed esegue il metodo \textit{find\_module} di ciascun oggetto. Questo metodo restituisce un loader del modulo selezionato nel caso lo trovi. Un loader è un oggetto che implementa il metodo \textit{load\_module}.
@@ -1388,6 +1388,7 @@ Byob sfrutta questo meccanismo. Quando esegue l'import manuale di un modulo remo
 
 
 Quando il bot è incaricato di eseguire l'upload di un file verso il server, invia una richiesta POST al sottoprocesso del server, incaricato di gestire le richieste POST, sulla porta dedicata.
+
 
 \section{Testing e debug}
 Per eseguire il testing, il server è stato containerizzato con Docker.
@@ -1448,7 +1449,12 @@ Le funzionalità di geolocalizzazione, l'import di script di Google Analytics e 
 
 
 A seguito di una fase di risoluzione dei problemi che ha richiesto un considerevole impiego di tempo, si è ritenuto opportuno procedere alla verifica con IDS delle sole funzionalità che al momento risultavano operative, per poi procedere con lo studio di un'ulteriore botnet.
-
+\begin{figure}[hbtp]
+    \centering
+    \includegraphics[width=\textwidth]{byobcommandexecution.png}
+    \caption{esecuzione di un comando ricevuto dal C\&C.}
+    \label{fig:byobcommandexecution}
+\end{figure}
 \section{Rilevazioni con IDS}
 
 
@@ -1777,7 +1783,7 @@ Mantiene le informazioni dei bot, i comandi inseriti ed altre informazioni all'i
 Una volta che il server è operativo, aspetta che un bot si metta in contatto con esso.
 Il bot comunica con il server attraverso comandi di \textit{Join} o di \textit{Poll} attraverso richieste HTTP. Il primo viene utilizzato per iniziare la comunicazione col server. Alla ricezione del comando di Join quindi il server controlla che il bot sia presente all'interno del database e nel caso non lo fosse viene aggiunto. Il comando di Poll invece, viene utilizzato per richiedere comandi al server. Questa peculiarità  definisce la botnet come pull-based.
 Il server riceve anche comandi contenenti l'esito dei task inoltrati.
-
+All'invio  di un comando e alla ricezione di un risultato, il server aggiunge tale informazioni al database.
 
 Il server inoltre,  mantiene un ulteriore processo in background che esegue codice PHP. Questo   si occupa di gestire l'upload degli screenshot, inviati dai bot attraverso richieste HTTP POST.
 \subsection{Payload}
@@ -1800,7 +1806,7 @@ In seguito invia un comando di \textit{Join} al server attraverso HTTP, in cui a
     \item Identificativo Hardware (HWID) associato al dispositivo.
 \end{itemize}
 In fine entra in un loop che si occupa di gestire la comunicazione col server e tutte le fasi operazionali di cui è incaricato.
-Entrando nei dettagli del loop, invia periodicamente un comando di Poll  a cui master risponde all'occorrenza con il prossimo comando da eseguire. Quando il comando viene ricevuto, ne esegue il parsing e nel caso sia un comando riconosciuto esegue l'handler ad esso associato. Infine attenda una quantità di tempo preimpostata prima di ripetere il ciclo e quindi di rieffettuare il polling verso il server.
+Entrando nei dettagli del loop, invia periodicamente un comando di Poll  a cui master risponde all'occorrenza con il prossimo comando da eseguire. Quando il comando viene ricevuto, ne esegue il parsing e nel caso sia un comando riconosciuto esegue l'handler ad esso associato (\Cref{fig:uboatcommandexecution}). Infine attenda una quantità di tempo preimpostata prima di ripetere il ciclo e quindi di rieffettuare il polling verso il server.
 
 \medskip
 Un comando è composto di tre campi: identificativo, tipo e dati.
@@ -1846,6 +1852,13 @@ void ScreenshotParser(int commandId, int commandType, char* data)
 	FreeDecodedResponse(response);
 }
 \end{lstlisting}
+
+\begin{figure}[hbtp]
+    \centering
+    \includegraphics[width=0.8\textwidth]{uboatcommandexecution.png}
+    \caption{esecuzione di un comando richiesto al C\&C.}
+    \label{fig:uboatcommandexecution}
+\end{figure}
 
 \section{Deploy, testing e debug}
 Il deploy del server è stato eseguito attraverso containerizzazione del web server e del DBMS. In particolare è stato utilizzato Docker Compose per eseguire contemporaneamente entrambi i container attraverso un unico file di configurazione ed un unico comando.
