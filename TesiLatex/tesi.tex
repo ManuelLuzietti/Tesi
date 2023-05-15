@@ -141,8 +141,8 @@
 
 %% Aggiunge pagine bianche vuote %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newcommand{\clearemptydoublepage}{\newpage{\pagestyle{empty}%
-%\cleardoublepage}}
-\clearpage}}
+\cleardoublepage}}
+%\clearpage}}
 
 %% Definisce l'environment abstract per la classe book %%%%%%%%%%%%%%%%%%%%%%
 \newenvironment{abstract}%
@@ -195,17 +195,31 @@
 \usepackage{algorithm}
 \usepackage{listings}
 
+
+\newcommand\blankpage{%
+    \null
+    \thispagestyle{empty}%
+    %\addtocounter{page}{-1}%
+    \newpage}
+
 \begin{document}
 
   \frontmatter{}
   \pagenumbering{Roman}
   \pagestyle{empty}
+  \addtocounter{page}{-2}%
   \input{src/1-frontmatter/frontespizio.tex}
   %\input{src/1-frontmatter/keywords.tex}
+  \clearemptydoublepage
   \input{src/1-frontmatter/dedica.tex}
+  \clearemptydoublepage
   \input{src/1-frontmatter/abstract.tex}
+  \blankpage
+  \blankpage
   \tableofcontents
 
+  \blankpage
+  \blankpage
   \mainmatter{}
   \pagenumbering{arabic}
   \pagestyle{headings}
